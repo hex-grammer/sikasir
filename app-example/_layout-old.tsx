@@ -1,3 +1,4 @@
+// import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { MD3LightTheme as DefaultTheme, PaperProvider } from 'react-native-paper';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -6,13 +7,6 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
-
-// If in _layout.tsx or in a separate file like types.ts
-export type RootStackParamList = {
-  login: undefined;
-  '(tabs)': undefined;
-  // Add other routes as necessary
-};
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -44,13 +38,11 @@ export default function RootLayout() {
 
   return (
     <PaperProvider theme={theme}>
-      <Stack>
-        {/* Add the Login screen */}
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        
-        {/* The main tab screens */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
+      {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+      {/* </ThemeProvider> */}
     </PaperProvider>
   );
 }
