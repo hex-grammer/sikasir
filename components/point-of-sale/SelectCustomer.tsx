@@ -142,13 +142,14 @@ const styles = StyleSheet.create({
   searchInput: {
     height: 40,
     borderColor: '#ccc',
-    backgroundColor: 'white',
+    backgroundColor: '#fafafa',
     borderWidth: 1,
     paddingHorizontal: 8,
     borderRadius: 5,
   },
   pickerContainer: {
-    borderColor: 'transparent',
+    borderColor: '#ccc',
+    borderTopWidth: 0,
     borderWidth: 1,
     borderRadius: 5,
   },

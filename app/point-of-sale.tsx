@@ -4,6 +4,10 @@ import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from './_layout';
 import ItemCard from '@/components/point-of-sale/ItemCard';
 import { SelectCustomer } from '@/components/point-of-sale/SelectCustomer';
+import { ThemedView } from '@/components/ThemedView';
+import Button from '@/components/Button';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { CartButton } from '@/components/point-of-sale/CartButton';
 
 interface Item {
   item_group: string;
@@ -56,7 +60,6 @@ export default function PointOfSaleScreen() {
   // Function to handle "Create New Customer" press
   const handleCreateCustomer = () => {
     console.log('Create New Customer button pressed');
-    // Add navigation or form handling logic here
   };
 
   return (
@@ -64,11 +67,15 @@ export default function PointOfSaleScreen() {
       {/* select customer */}
       <SelectCustomer customers={CUSTOMER_LIST} onCreateCustomer={handleCreateCustomer} />
         
-      {/* Search item by name or code */}
-      <TextInput 
-        style={styles.searchInput}
-        placeholder="Search by item name or code"
-      />
+      <ThemedView style={styles.searchAndCartContainer}>
+        {/* Search item by name or code */}
+        <TextInput style={styles.searchInput} placeholder="Search by item name or code" />
+        
+        {/* Custom Cart Button with Quantity */}
+        <CartButton qty={68} onPress={() => navigation.navigate('cart')} />
+
+        {/* Select Category Picker */}
+      </ThemedView>
 
       {/* List of items */}
       <FlatList
@@ -86,14 +93,21 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f5f5f5',
   },
+  searchAndCartContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 8,
+    backgroundColor: 'transparent',
+    gap: 12,
+  },
   searchInput: {
+    flex:1,
     height: 40,
     borderColor: '#ccc',
-    backgroundColor: 'white',
     borderWidth: 1,
     paddingLeft: 10,
     borderRadius: 8,
-    marginBottom: 14,
-    marginTop: 12,
+    backgroundColor: '#fafafa',
   },
 });

@@ -27,10 +27,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
             <ThemedText>Loading user data...</ThemedText>
         )}
         <ThemedView style={styles.heroButtons}>
-            <Button title="Buka POS" onPress={() => {
-                navigation.navigate("point-of-sale");
-            }} />
-            <Button title="Rekap POS" type="outline" onPress={() => {}} />
+            <Button title="Buka POS" onPress={() => {navigation.navigate("point-of-sale");}} style={{flex:1}}/>
+            <Button title="Rekap POS" type="outline" onPress={() => {}} style={{flex:1}}/>
         </ThemedView>
         </ThemedView>
     );

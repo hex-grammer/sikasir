@@ -12,8 +12,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 export type RootStackParamList = {
   login: undefined;
   'point-of-sale': undefined;
+  cart: undefined;
   '(tabs)': undefined;
-  // Add other routes as necessary
 };
 
 export type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -55,6 +55,9 @@ export default function RootLayout() {
 
         {/* Point of Sale screen */}
         <Stack.Screen name="point-of-sale" options={{title: "Point of Sale"}} />
+
+        {/* Cart screen */}
+        <Stack.Screen name="cart" options={{title: "Cart"}} />
         
         {/* The main tab screens */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
