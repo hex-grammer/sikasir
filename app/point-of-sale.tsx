@@ -42,6 +42,54 @@ export default function PointOfSaleScreen() {
       discount: 0,
       stock: 150,
     },
+    {
+      item_group: 'Voucher',
+      item_code: 'PKT410',
+      item_name: 'Voucher 1.5GB 3 Hari Zona 3',
+      price: 47000,
+      discount: 8000,
+      stock: 258,
+    },
+    {
+      item_group: 'Voucher',
+      item_code: 'PKT411',
+      item_name: 'Voucher 3GB 5 Hari Zona 3',
+      price: 85000,
+      discount: 0,
+      stock: 150,
+    },
+    {
+      item_group: 'Voucher',
+      item_code: 'PKT412',
+      item_name: 'Voucher 1.5GB 3 Hari Zona 3',
+      price: 47000,
+      discount: 8000,
+      stock: 258,
+    },
+    {
+      item_group: 'Voucher',
+      item_code: 'PKT413',
+      item_name: 'Voucher 3GB 5 Hari Zona 3',
+      price: 85000,
+      discount: 0,
+      stock: 150,
+    },
+    {
+      item_group: 'Voucher',
+      item_code: 'PKT414',
+      item_name: 'Voucher 1.5GB 3 Hari Zona 3',
+      price: 47000,
+      discount: 8000,
+      stock: 258,
+    },
+    {
+      item_group: 'Voucher',
+      item_code: 'PKT415',
+      item_name: 'Voucher 3GB 5 Hari Zona 3',
+      price: 85000,
+      discount: 0,
+      stock: 150,
+    },
   ];
 
   const CUSTOMER_LIST: Customer[] = [
@@ -68,13 +116,8 @@ export default function PointOfSaleScreen() {
       <SelectCustomer customers={CUSTOMER_LIST} onCreateCustomer={handleCreateCustomer} />
         
       <ThemedView style={styles.searchAndCartContainer}>
-        {/* Search item by name or code */}
         <TextInput style={styles.searchInput} placeholder="Search by item name or code" />
-        
-        {/* Custom Cart Button with Quantity */}
         <CartButton qty={68} onPress={() => navigation.navigate('cart')} />
-
-        {/* Select Category Picker */}
       </ThemedView>
 
       {/* List of items */}
@@ -82,6 +125,7 @@ export default function PointOfSaleScreen() {
         data={ITEM_LIST}
         keyExtractor={(item) => item.item_code}
         renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -91,6 +135,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingBottom: 0,
     backgroundColor: '#f5f5f5',
   },
   searchAndCartContainer: {

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, Alert, Modal, FlatList } from 'react-native';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { InsertSerialNumber, SerialNumber } from './InsertSerialNumber';
 
 export interface ItemCardProps {
   item: {
@@ -16,31 +17,55 @@ export interface ItemCardProps {
 
 const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const [quantity, setQuantity] = useState(1);
+  const [isSerialModalVisible, setSerialModalVisible] = useState(false);
   const discountedPrice = item.price - item.discount;
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>([]);
+
+  const handleSaveSerialNumbers = (serials: SerialNumber[]) => {
+    setSerialNumbers(serials);
+    setModalVisible(false);
+  };
 
   const handleIncrease = () => setQuantity(prev => (prev < item.stock ? prev + 1 : prev));
   const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
   const handleQuantityChange = (value: string) => {
-    if (value === '') {
-      setQuantity(0); // Temporarily set quantity to 0 for empty input
-    } else {
-      const parsedValue = parseInt(value, 10);
-      if (!isNaN(parsedValue) && parsedValue >= 1 && parsedValue <= item.stock) {
-        setQuantity(parsedValue); // Set valid value within the stock limit
-      }
+    const parsedValue = parseInt(value, 10);
+    if (!isNaN(parsedValue) && parsedValue >= 1 && parsedValue <= item.stock) {
+      setQuantity(parsedValue);
+      adjustSerialNumbers(parsedValue); // Adjust the serial number count
     }
   };
-  
-  // Add a blur event handler to reset to 1 if input is left empty
-  const handleQuantityBlur = () => {
-    if (quantity === 0) {
-      setQuantity(1); // Reset to 1 if left empty after focus lost
+
+  const adjustSerialNumbers = (newQuantity: number) => {
+    if (newQuantity < serialNumbers.length) {
+      setSerialNumbers(serialNumbers.slice(0, newQuantity));
+    } else if (newQuantity > serialNumbers.length) {
+      setSerialNumbers([...serialNumbers, ...new Array(newQuantity - serialNumbers.length).fill('')]);
     }
-  };  
+  };
+
+  const handleSerialNumberChange = (value: string, index: number) => {
+    const updatedSerials = [...serialNumbers];
+    updatedSerials[index].value = value;
+    setSerialNumbers(updatedSerials);
+  };
+
+  const handleSelectSerialNumbers = () => {
+    if (serialNumbers.map(sn=>sn.value).includes('')) {
+      Alert.alert('Error', 'Please fill in all serial numbers');
+    } else {
+      // Save the serial numbers and item code
+      console.log('Item code:', item.item_code);
+      console.log('Serial numbers:', serialNumbers);
+      setSerialModalVisible(false);
+    }
+  };
 
   return (
     <View style={styles.card}>
+      {/* Item Details */}
       <View style={styles.topRow}>
         <Text style={styles.itemGroup}>{item.item_group}</Text>
         <View style={styles.stockChip}>
@@ -54,6 +79,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       </View>
 
       <View style={styles.bottomRow}>
+        {/* Price Section */}
         <View style={styles.priceInfo}>
           {item.discount > 0 && (
             <Text style={styles.originalPrice}>Rp {item.price.toLocaleString()}</Text>
@@ -61,31 +87,42 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           <Text style={styles.discountedPrice}>Rp {discountedPrice.toLocaleString()}</Text>
         </View>
 
+        {/* Quantity and Cart Actions */}
         <View style={styles.cartActions}>
           <Pressable style={styles.quantityButton} onPress={handleDecrease}>
             <Text style={styles.quantityButtonText}>-</Text>
           </Pressable>
-          
-            <TextInput
-                style={styles.quantityInput}
-                value={quantity === 0 ? '' : String(quantity)} // Show empty string if quantity is 0
-                keyboardType="numeric"
-                onChangeText={handleQuantityChange}
-                onBlur={handleQuantityBlur} // Handle resetting to 1 if empty
-            />
+
+          <TextInput
+            style={styles.quantityInput}
+            value={String(quantity)}
+            keyboardType="numeric"
+            onChangeText={handleQuantityChange}
+          />
 
           <Pressable style={styles.quantityButton} onPress={handleIncrease}>
             <Text style={styles.quantityButtonText}>+</Text>
           </Pressable>
 
-          <Pressable style={styles.addToCartButton}>
+          {/* Button to open serial number modal */}
+          <Pressable
+            style={styles.addToCartButton}
+            onPress={() => setModalVisible(true)}
+          >
             <Text style={styles.addToCartButtonText}>
-              {/* <MaterialIcons name="add-shopping-cart" size={24} color="white" /> */}
               <FontAwesome6 name="cart-plus" size={18} color="#24a0ed" />
             </Text>
           </Pressable>
         </View>
       </View>
+
+      <InsertSerialNumber
+        visible={isModalVisible}
+        quantity={3} // or any quantity
+        itemCode="PKT408"
+        onSave={handleSaveSerialNumbers}
+        onCancel={() => setModalVisible(false)}
+      />
     </View>
   );
 };
@@ -187,6 +224,59 @@ const styles = StyleSheet.create({
   },
   addToCartButtonText: {
     color: '#fff',
+    fontWeight: 'bold',
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    elevation: 5, // For shadow on Android
+    shadowColor: '#000', // Shadow on iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  serialRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  serialInput: {
+    flex: 1,
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginLeft: 10,
+  },
+  modalButton: {
+    padding: 10,
+    backgroundColor: '#2196F3',
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  cancelButton: {
+    backgroundColor: '#f44336', // Red for cancel
+  },
+  modalButtonText: {
+    color: 'white',
+    textAlign: 'center',
     fontWeight: 'bold',
   },
 });
