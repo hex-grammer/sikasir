@@ -48,6 +48,7 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     fontSize: 24,
+    lineHeight: 26,
     fontWeight: "bold",
     color: "#353636",
     marginBottom: 4,
