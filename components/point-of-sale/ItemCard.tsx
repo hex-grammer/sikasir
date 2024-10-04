@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, Alert, Modal, FlatList } from 'react-native';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import React, { useState } from 'react';
+import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { InsertSerialNumber, SerialNumber } from './InsertSerialNumber';
+import InsertSerialNumber, { SerialNumber } from './InsertSerialNumber';
 
 export interface ItemCardProps {
   item: {
@@ -17,49 +16,44 @@ export interface ItemCardProps {
 
 const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const [quantity, setQuantity] = useState(1);
-  const [isSerialModalVisible, setSerialModalVisible] = useState(false);
-  const discountedPrice = item.price - item.discount;
+  const [inputValue, setInputValue] = useState<string>('1');
   const [isModalVisible, setModalVisible] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>([]);
+  const discountedPrice = item.price - item.discount;
 
-  const handleSaveSerialNumbers = (serials: SerialNumber[]) => {
-    setSerialNumbers(serials);
+  const handleAddToCart = (serials: SerialNumber[]) => {
+    console.log('Serial Numbers:', serials);
     setModalVisible(false);
+    setQuantity(1);
+    setInputValue('1');
   };
 
-  const handleIncrease = () => setQuantity(prev => (prev < item.stock ? prev + 1 : prev));
-  const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+  const handleIncrease = () => {
+    setQuantity(prev => (prev < item.stock ? prev + 1 : prev));
+    setInputValue(String(quantity < item.stock ? quantity + 1 : quantity));
+  };
+  
+  const handleDecrease = () => {
+    setQuantity(prev => (prev > 1 ? prev - 1 : 1));
+    setInputValue(String(quantity > 1 ? quantity - 1 : 1));
+  };
 
   const handleQuantityChange = (value: string) => {
-    const parsedValue = parseInt(value, 10);
-    if (!isNaN(parsedValue) && parsedValue >= 1 && parsedValue <= item.stock) {
-      setQuantity(parsedValue);
-      adjustSerialNumbers(parsedValue); // Adjust the serial number count
-    }
-  };
-
-  const adjustSerialNumbers = (newQuantity: number) => {
-    if (newQuantity < serialNumbers.length) {
-      setSerialNumbers(serialNumbers.slice(0, newQuantity));
-    } else if (newQuantity > serialNumbers.length) {
-      setSerialNumbers([...serialNumbers, ...new Array(newQuantity - serialNumbers.length).fill('')]);
-    }
-  };
-
-  const handleSerialNumberChange = (value: string, index: number) => {
-    const updatedSerials = [...serialNumbers];
-    updatedSerials[index].value = value;
-    setSerialNumbers(updatedSerials);
-  };
-
-  const handleSelectSerialNumbers = () => {
-    if (serialNumbers.map(sn=>sn.value).includes('')) {
-      Alert.alert('Error', 'Please fill in all serial numbers');
+    if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= item.stock)) {
+      setInputValue(value);
     } else {
-      // Save the serial numbers and item code
-      console.log('Item code:', item.item_code);
-      console.log('Serial numbers:', serialNumbers);
-      setSerialModalVisible(false);
+      setInputValue(inputValue);
+    }
+  };
+
+  const handleQuantityBlur = () => {
+    if (inputValue === '' || isNaN(parseInt(inputValue, 10))) {
+      setQuantity(1);
+      setInputValue('1');
+    } else {
+      const parsedValue = parseInt(inputValue, 10);
+      setQuantity(parsedValue);
+      setInputValue(String(parsedValue)); 
     }
   };
 
@@ -95,19 +89,22 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
 
           <TextInput
             style={styles.quantityInput}
-            value={String(quantity)}
+            value={inputValue}
             keyboardType="numeric"
             onChangeText={handleQuantityChange}
+            onBlur={handleQuantityBlur}
           />
 
           <Pressable style={styles.quantityButton} onPress={handleIncrease}>
             <Text style={styles.quantityButtonText}>+</Text>
           </Pressable>
 
-          {/* Button to open serial number modal */}
           <Pressable
             style={styles.addToCartButton}
-            onPress={() => setModalVisible(true)}
+            onPress={() => {
+              setModalVisible(true);
+              setQuantity(parseInt(inputValue, 10));
+            }}
           >
             <Text style={styles.addToCartButtonText}>
               <FontAwesome6 name="cart-plus" size={18} color="#24a0ed" />
@@ -117,17 +114,20 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
       </View>
 
       <InsertSerialNumber
-        visible={isModalVisible}
-        quantity={3} // or any quantity
-        itemCode="PKT408"
-        onSave={handleSaveSerialNumbers}
-        onCancel={() => setModalVisible(false)}
+        quantity={quantity}
+        itemCode={item.item_code}
+        isModalVisible={isModalVisible}
+        initialSerialNumbers={serialNumbers}
+        onSave={handleAddToCart}
+        onClose={() => setModalVisible(false)}
+        setQuantity={setQuantity} // Pass quantity updater to InsertSerialNumber
       />
     </View>
   );
 };
 
 export default ItemCard;
+
 
 const styles = StyleSheet.create({
   card: {
@@ -185,7 +185,6 @@ const styles = StyleSheet.create({
   discountedPrice: {
     fontSize: 16,
     fontWeight: 'bold',
-    // color: '#4CAF50',
   },
   originalPrice: {
     fontSize: 14,
@@ -226,20 +225,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
-
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
-  },
   modalContent: {
     width: '80%',
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
-    elevation: 5, // For shadow on Android
-    shadowColor: '#000', // Shadow on iOS
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
