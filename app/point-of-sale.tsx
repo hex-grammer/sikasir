@@ -129,7 +129,7 @@ export default function PointOfSaleScreen() {
         keyExtractor={(item) => item.item_code}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
       />
     </KeyboardAvoidingView>
   );
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    paddingBottom: 0,
     backgroundColor: '#f5f5f5',
   },
   searchAndCartContainer: {

@@ -13,6 +13,7 @@ export type RootStackParamList = {
   login: undefined;
   'point-of-sale': undefined;
   cart: undefined;
+  invoice: undefined;
   '(tabs)': undefined;
 };
 
@@ -58,6 +59,13 @@ export default function RootLayout() {
 
         {/* Cart screen */}
         <Stack.Screen name="cart" options={{title: "Keranjang", animation: 'slide_from_right'}} />
+
+        {/* Invoice screen */}
+        <Stack.Screen name="invoice" options={{
+          title: "Invoice", 
+          animation: 'slide_from_right',
+          headerBackVisible: false,
+        }} />
         
         {/* The main tab screens */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

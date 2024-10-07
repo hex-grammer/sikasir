@@ -92,6 +92,7 @@ const handleCheckout = () => {
         onPress: () => {
           setCartItems([]);
           setTotalAmount(0);
+          navigation.navigate('invoice');
         },
       },
     ]
@@ -147,7 +148,7 @@ return (
       style={styles.checkoutButton}
       onPress={handleCheckout}
     >
-      <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+      <Text style={styles.checkoutButtonText}>BAYAR</Text>
     </Pressable>
   </ThemedView>
 );
