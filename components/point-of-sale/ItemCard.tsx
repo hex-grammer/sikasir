@@ -107,7 +107,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
             }}
           >
             <Text style={styles.addToCartButtonText}>
-              <FontAwesome6 name="cart-plus" size={18} color="#24a0ed" />
+              <FontAwesome6 name="cart-plus" size={18} color="black" />
             </Text>
           </Pressable>
         </View>
@@ -219,10 +219,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginLeft: 8,
     borderWidth: 1,
-    borderColor: '#24a0ed',
+    // borderColor: '#24a0ed',
   },
   addToCartButtonText: {
-    color: '#fff',
+    // color: '#fff',
+    color:'black',
     fontWeight: 'bold',
   },
   modalContent: {

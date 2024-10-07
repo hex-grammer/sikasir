@@ -37,11 +37,13 @@ export default function Button({
 const getButtonStyle = (type: ButtonProps['type']): ViewStyle => {
   switch (type) {
     case 'primary':
-      return { backgroundColor: '#24a0ed' }; // blue
+      // return { backgroundColor: '#24a0ed' }; // blue
+      return { backgroundColor: 'black' }; // blue
     case 'secondary':
       return { backgroundColor: '#6C757D' }; // gray
     case 'outline':
-      return { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#24a0ed' };
+      // return { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#24a0ed' };
+      return { backgroundColor: 'transparent', borderWidth: 1, borderColor: 'black' };
     case 'danger':
       return { backgroundColor: '#DC3545' }; // red
     case 'text':
@@ -55,7 +57,8 @@ const getButtonStyle = (type: ButtonProps['type']): ViewStyle => {
 const getTextStyle = (type: ButtonProps['type']): TextStyle => {
   switch (type) {
     case 'outline':
-      return { color: '#24a0ed', elevation: 0 }; // Blue text for outline
+      // return { color: '#24a0ed', elevation: 0 }; // Blue text for outline
+      return { color: 'black', elevation: 0 }; // Blue text for outline
     case 'text':
       return { color: 'gray', elevation: 0 }; // Gray text for text type
     default:

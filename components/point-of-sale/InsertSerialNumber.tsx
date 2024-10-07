@@ -276,7 +276,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   removeButtonText: {
-    // color: '#f44336',
     color: '#aaa',
   },
   addSerialButton: {

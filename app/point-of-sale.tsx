@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TextInput, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from './_layout';
 import ItemCard from '@/components/point-of-sale/ItemCard';
@@ -111,7 +111,10 @@ export default function PointOfSaleScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       {/* select customer */}
       <SelectCustomer customers={CUSTOMER_LIST} onCreateCustomer={handleCreateCustomer} />
         
@@ -126,8 +129,9 @@ export default function PointOfSaleScreen() {
         keyExtractor={(item) => item.item_code}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 80 }}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -135,7 +139,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    paddingBottom: 0,
     backgroundColor: '#f5f5f5',
   },
   searchAndCartContainer: {

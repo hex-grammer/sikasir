@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, View, Text, Pressable, Modal, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import CreateCustomerModal from './CreateCustomerModal';
 
 export interface Customer {
   name: string;
@@ -31,21 +32,25 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
 
   const handleSelectCustomer = (value: string) => {
     if (value === 'create_new_customer') {
-      setCreateModalVisible(true); // Show create customer modal
+      setCreateModalVisible(true);
     } else {
       setSelectedCustomer(value);
-      setSearchQuery(value); // Set selected customer name in search input
-      setPickerVisible(false); // Hide picker after selection
+      setSearchQuery(value); 
+      setPickerVisible(false);
     }
   };
 
   const handleCreateCustomer = () => {
     const trimmedCustomerName = newCustomerName.trim();
-    if (trimmedCustomerName) {
-      onCreateCustomer(trimmedCustomerName); // Trigger the creation of the new customer
-      setNewCustomerName('');
-      setCreateModalVisible(false); // Close modal after creation
+    if (!trimmedCustomerName) {
+      return;
     }
+
+    console.log('Creating customer:', trimmedCustomerName);
+    
+    onCreateCustomer(trimmedCustomerName);
+    setNewCustomerName('');
+    setCreateModalVisible(false);
   };
 
   const handleFocus = () => {
@@ -55,7 +60,7 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
   const handleBlur = () => {
     setPickerVisible(false);
     if (searchQuery.trim() === '') {
-      setSearchQuery(selectedCustomer); // Reset to the selected customer if search is empty
+      setSearchQuery(selectedCustomer);
     }
   };
 
@@ -67,7 +72,7 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
     }
 
     typingTimeoutRef.current = setTimeout(() => {
-      pickerRef.current?.focus(); // Focus picker after 800ms delay
+      pickerRef.current?.focus();
     }, 1000);
   };
 
@@ -96,39 +101,17 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
               {filteredCustomers.map((customer, index) => (
                 <Picker.Item key={index} label={customer.name} value={customer.name} />
               ))}
-              <Picker.Item label="+ Create New Customer" value="create_new_customer" />
+              <Picker.Item label="+ Buat Customer Baru" value="create_new_customer" />
             </Picker>
           </View>
         )}
         
         {/* Modal for creating a new customer */}
-        <Modal
-          visible={isCreateModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setCreateModalVisible(false)}
-        >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create New Customer</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter customer name"
-              value={newCustomerName}
-              onChangeText={setNewCustomerName}
-            />
-            <Pressable style={styles.modalButton} onPress={handleCreateCustomer}>
-              <Text style={styles.modalButtonText}>Create</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.modalButton, styles.cancelButton]}
-              onPress={() => setCreateModalVisible(false)}
-            >
-              <Text style={styles.modalButtonText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-        </Modal>
+        <CreateCustomerModal
+          isVisible={isCreateModalVisible}
+          onCreateCustomer={handleCreateCustomer}
+          onClose={() => setCreateModalVisible(false)}
+        />
       </View>
     </TouchableWithoutFeedback>
   );
