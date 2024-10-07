@@ -3,20 +3,13 @@ import { View, Text, StyleSheet, FlatList, TextInput, Pressable, Alert } from 'r
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from './_layout';
 import { ThemedView } from '@/components/ThemedView';
-
-interface CartItem {
-  item_code: string;
-  item_name: string;
-  price: number;
-  discount: number;
-  quantity: number;
-}
+import CartItem, { iCartItem } from '@/components/cart/CartItem';
 
 export default function CartScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
   // Sample cart data (you can replace with actual dynamic data)
-  const CART_ITEMS: CartItem[] = [
+  const CART_ITEMS: iCartItem[] = [
     {
       item_code: 'PKT408',
       item_name: 'Voucher 1.5GB 3 Hari Zona 3',
@@ -31,98 +24,74 @@ export default function CartScreen() {
       discount: 0,
       quantity: 1,
     },
+    {
+      item_code: 'PKT4010',
+      item_name: 'Voucher 3GB 5 Hari Zona 3',
+      price: 85000,
+      discount: 0,
+      quantity: 3,
+    },
   ];
 
-  const [cartItems, setCartItems] = useState<CartItem[]>(CART_ITEMS);
+  const [cartItems, setCartItems] = useState<iCartItem[]>(CART_ITEMS);
   const [totalAmount, setTotalAmount] = useState(calculateTotal(CART_ITEMS));
 
   // Calculate total price with discounts
-  function calculateTotal(items: CartItem[]) {
+  function calculateTotal(items: iCartItem[]) {
     return items.reduce(
       (total, item) => total + (item.price - item.discount) * item.quantity,
       0
     );
   }
 
-  // Function to update item quantity
-  const handleUpdateQuantity = (itemCode: string, newQuantity: number) => {
-    const updatedItems = cartItems.map((item) =>
-      item.item_code === itemCode ? { ...item, quantity: newQuantity } : item
-    );
-    setCartItems(updatedItems);
-    setTotalAmount(calculateTotal(updatedItems));
-  };
-
-  // Function to remove item from cart
-  const handleRemoveItem = (itemCode: string) => {
-    const updatedItems = cartItems.filter((item) => item.item_code !== itemCode);
-    setCartItems(updatedItems);
-    setTotalAmount(calculateTotal(updatedItems));
-  };
-
-  // Render each item in the cart
-  const renderCartItem = ({ item }: { item: CartItem }) => (
-    <View style={styles.cartItem}>
-      <View style={styles.cartItemText}>
-        <Text style={styles.itemName}>{item.item_name}</Text>
-        <Text style={styles.itemDetails}>Price: Rp {item.price}</Text>
-        <Text style={styles.itemDetails}>Discount: Rp {item.discount}</Text>
-        <Text style={styles.itemDetails}>Subtotal: Rp {(item.price - item.discount) * item.quantity}</Text>
-      </View>
-      <View style={styles.quantityContainer}>
-        <Pressable
-          style={styles.quantityButton}
-          onPress={() => handleUpdateQuantity(item.item_code, Math.max(item.quantity - 1, 1))}
-        >
-          <Text style={styles.quantityButtonText}>-</Text>
-        </Pressable>
-        <TextInput
-          style={styles.quantityInput}
-          keyboardType="numeric"
-          value={String(item.quantity)}
-          onChangeText={(text) => {
-            const parsedQuantity = parseInt(text, 10);
-            if (!isNaN(parsedQuantity) && parsedQuantity > 0) {
-              handleUpdateQuantity(item.item_code, parsedQuantity);
-            }
-          }}
-        />
-        <Pressable
-          style={styles.quantityButton}
-          onPress={() => handleUpdateQuantity(item.item_code, item.quantity + 1)}
-        >
-          <Text style={styles.quantityButtonText}>+</Text>
-        </Pressable>
-        <Pressable style={styles.removeButton} onPress={() => handleRemoveItem(item.item_code)}>
-          <Text style={styles.removeButtonText}>Remove</Text>
-        </Pressable>
-      </View>
-    </View>
+// Function to remove item from cart with confirmation
+const handleRemoveItem = (itemCode: string) => {
+  Alert.alert(
+    'Hapus Item?',
+    `Anda yakin ingin menghapus item ${itemCode} dari keranjang?`,
+    [
+      {
+        text: 'Batal',
+        style: 'cancel',
+      },
+      {
+        text: 'Hapus',
+        style: 'destructive',
+        onPress: () => {
+          const updatedItems = cartItems.filter((item) => item.item_code !== itemCode);
+          setCartItems(updatedItems);
+          setTotalAmount(calculateTotal(updatedItems));
+        },
+      },
+    ]
   );
+};
 
   return (
-    <View style={styles.container}>
-      <ThemedView>
-        <Text style={styles.header}>Your Cart</Text>
-        {cartItems.length === 0 ? (
-          <Text style={styles.emptyCartText}>Your cart is empty</Text>
-        ) : (
-          <>
-            <FlatList
-              data={cartItems}
-              keyExtractor={(item) => item.item_code}
-              renderItem={renderCartItem}
-            />
-            <View style={styles.totalContainer}>
-              <Text style={styles.totalText}>Total: Rp {totalAmount}</Text>
-            </View>
-            <Pressable style={styles.checkoutButton} onPress={() => Alert.alert('Checkout')}>
-              <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-            </Pressable>
-          </>
-        )}
-      </ThemedView>
-    </View>
+    <ThemedView style={styles.container}>
+      {cartItems.length === 0 ? (
+        <Text style={styles.emptyCartText}>Your cart is empty</Text>
+      ) : (
+        <>
+          <FlatList
+            data={cartItems}
+            keyExtractor={(item) => item.item_code}
+            renderItem={({ item }: { item: iCartItem }) => (
+              <CartItem
+                item={item}
+                onRemove={(itemCode) => handleRemoveItem(itemCode)}
+              />
+            )}
+          />
+        </>
+      )}
+      <View style={styles.totalContainer}>
+        <Text style={styles.totalText}>Total: Rp {totalAmount}</Text>
+      </View>
+      <Pressable style={styles.checkoutButton} onPress={() => Alert.alert('Checkout Bro!')}>
+        <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+      </Pressable>
+    </ThemedView>
   );
 }
 
@@ -130,7 +99,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f5f5f5',
+    paddingTop: 10,
   },
   header: {
     fontSize: 24,

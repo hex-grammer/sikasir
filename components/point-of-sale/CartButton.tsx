@@ -10,12 +10,12 @@ interface CartButtonProps {
 export const CartButton: React.FC<CartButtonProps> = ({ qty, onPress }) => {
   return (
     <Pressable style={styles.button} onPress={onPress}>
-      <Ionicons name="cart-outline" size={28} color="#696969" />
+      <Ionicons name="cart-outline" size={28} color="black" />
       {qty > 0 && (
         <View style={styles.qtyChip}>
             <Text style={styles.qtyText}>{qty > 99 ? '99+' : qty}</Text>
         </View>
-    )}
+      )}
     </Pressable>
   );
 };

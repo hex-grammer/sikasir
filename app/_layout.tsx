@@ -57,7 +57,7 @@ export default function RootLayout() {
         <Stack.Screen name="point-of-sale" options={{title: "Point of Sale", animation: 'slide_from_right'}} />
 
         {/* Cart screen */}
-        <Stack.Screen name="cart" options={{title: "Cart", animation: 'slide_from_right'}} />
+        <Stack.Screen name="cart" options={{title: "Keranjang", animation: 'slide_from_right'}} />
         
         {/* The main tab screens */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
