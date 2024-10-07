@@ -44,6 +44,15 @@ export default function CartScreen() {
     );
   }
 
+  // Calculate total before tax
+  const totalBeforeTax = calculateTotal(cartItems);
+  
+  // Calculate discount
+  const discount = totalBeforeTax - totalAmount;
+  
+  // Calculate PPN 11%
+  const taxAmount = totalAmount * 0.11;
+
 // Function to remove item from cart with confirmation
 const handleRemoveItem = (itemCode: string) => {
   Alert.alert(
@@ -67,32 +76,81 @@ const handleRemoveItem = (itemCode: string) => {
   );
 };
 
-  return (
-    <ThemedView style={styles.container}>
-      {cartItems.length === 0 ? (
-        <Text style={styles.emptyCartText}>Your cart is empty</Text>
-      ) : (
-        <>
-          <FlatList
-            data={cartItems}
-            keyExtractor={(item) => item.item_code}
-            renderItem={({ item }: { item: iCartItem }) => (
-              <CartItem
-                item={item}
-                onRemove={(itemCode) => handleRemoveItem(itemCode)}
-              />
-            )}
-          />
-        </>
-      )}
-      <View style={styles.totalContainer}>
-        <Text style={styles.totalText}>Total: Rp {totalAmount}</Text>
+// Function to handle checkout
+const handleCheckout = () => {
+  Alert.alert(
+    'Pembayaran',
+    `Total yang harus dibayar: Rp ${totalAmount.toLocaleString()}`,
+    [
+      {
+        text: 'Batal',
+        style: 'cancel',
+      },
+      {
+        text: 'Bayar',
+        style: 'destructive',
+        onPress: () => {
+          setCartItems([]);
+          setTotalAmount(0);
+        },
+      },
+    ]
+  )
+};
+
+return (
+  <ThemedView style={styles.container}>
+    {cartItems.length === 0 ? (
+      <Text style={styles.emptyCartText}>Tidak ada item di keranjang.</Text>
+    ) : (
+      <>
+        <FlatList
+          data={cartItems}
+          keyExtractor={(item) => item.item_code}
+          renderItem={({ item }: { item: iCartItem }) => (
+            <CartItem
+              item={item}
+              onRemove={(itemCode) => handleRemoveItem(itemCode)}
+            />
+          )}
+        />
+      </>
+    )}
+
+    {/* Total Before Tax */}
+    <View style={styles.totalContainer}>
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>Total Before Tax</Text>
+        <Text style={styles.totalValue}>Rp {totalBeforeTax.toLocaleString()}</Text>
       </View>
-      <Pressable style={styles.checkoutButton} onPress={() => Alert.alert('Checkout Bro!')}>
-        <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
-      </Pressable>
-    </ThemedView>
-  );
+
+      {/* Discount */}
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>Discount</Text>
+        <Text style={styles.totalValue}>Rp {discount.toLocaleString()}</Text>
+      </View>
+
+      {/* PPN 11% */}
+      <View style={styles.totalRow}>
+        <Text style={styles.totalLabel}>PPN 11%</Text>
+        <Text style={styles.totalValue}>Rp {taxAmount.toLocaleString()}</Text>
+      </View>
+
+      {/* Grand Total */}
+      <View style={styles.totalRow}>
+        <Text style={styles.grandTotalLabel}>Grand Total</Text>
+        <Text style={styles.grandTotalValue}>Rp {totalAmount.toLocaleString()}</Text>
+      </View>
+    </View>
+
+    <Pressable
+      style={styles.checkoutButton}
+      onPress={handleCheckout}
+    >
+      <Text style={styles.checkoutButtonText}>Proceed to Checkout</Text>
+    </Pressable>
+  </ThemedView>
+);
 }
 
 const styles = StyleSheet.create({
@@ -154,28 +212,57 @@ const styles = StyleSheet.create({
   removeButtonText: {
     color: 'white',
   },
-  totalContainer: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
   totalText: {
     fontSize: 22,
     fontWeight: 'bold',
   },
-  checkoutButton: {
-    backgroundColor: '#4CAF50',
-    padding: 15,
-    borderRadius: 8,
+  emptyCartText: {
+    flex:1,
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#555',
     marginTop: 20,
+  },
+  totalContainer: {
+    paddingTop: 10,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 5,
+  },
+  totalLabel: {
+    fontSize: 16,
+    color: '#333',
+  },
+  totalValue: {
+    fontSize: 16,
+    color: '#333',
+    // fontWeight: 'bold',
+    textAlign: 'right',
+  },
+  grandTotalLabel: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: 'bold',
+  },
+  grandTotalValue: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: 'bold',
+    textAlign: 'right',
+  },
+  checkoutButton: {
+    marginTop: 20,
+    // backgroundColor: '#007bff',
+    backgroundColor: 'black',
+    padding: 15,
+    borderRadius: 5,
     alignItems: 'center',
   },
   checkoutButtonText: {
-    color: 'white',
-    fontSize: 18,
-  },
-  emptyCartText: {
-    textAlign: 'center',
-    fontSize: 18,
-    color: '#555',
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
