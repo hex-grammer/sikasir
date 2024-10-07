@@ -142,7 +142,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
                 onChangeText={setAlamat}
                 multiline={true}
                 numberOfLines={3}
-                textAlignVertical="top"
+                verticalAlign="top"
               />
             </View>
   
