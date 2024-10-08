@@ -1,42 +1,41 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TextInput, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from './_layout';
 import { ThemedView } from '@/components/ThemedView';
 import CartItem, { iCartItem } from '@/components/cart/CartItem';
+import CustomButton from '@/components/CustomButton';
+
+const CART_ITEMS: iCartItem[] = [
+  {
+    item_code: 'PKT408',
+    item_name: 'Voucher 1.5GB 3 Hari Zona 3',
+    price: 47000,
+    discount: 8000,
+    quantity: 2,
+  },
+  {
+    item_code: 'PKT409',
+    item_name: 'Voucher 3GB 5 Hari Zona 3',
+    price: 85000,
+    discount: 0,
+    quantity: 1,
+  },
+  {
+    item_code: 'PKT4010',
+    item_name: 'Voucher 3GB 5 Hari Zona 3',
+    price: 85000,
+    discount: 0,
+    quantity: 3,
+  },
+];
 
 export default function CartScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
-  // Sample cart data (you can replace with actual dynamic data)
-  const CART_ITEMS: iCartItem[] = [
-    {
-      item_code: 'PKT408',
-      item_name: 'Voucher 1.5GB 3 Hari Zona 3',
-      price: 47000,
-      discount: 8000,
-      quantity: 2,
-    },
-    {
-      item_code: 'PKT409',
-      item_name: 'Voucher 3GB 5 Hari Zona 3',
-      price: 85000,
-      discount: 0,
-      quantity: 1,
-    },
-    {
-      item_code: 'PKT4010',
-      item_name: 'Voucher 3GB 5 Hari Zona 3',
-      price: 85000,
-      discount: 0,
-      quantity: 3,
-    },
-  ];
-
   const [cartItems, setCartItems] = useState<iCartItem[]>(CART_ITEMS);
   const [totalAmount, setTotalAmount] = useState(calculateTotal(CART_ITEMS));
 
-  // Calculate total price with discounts
   function calculateTotal(items: iCartItem[]) {
     return items.reduce(
       (total, item) => total + (item.price - item.discount) * item.quantity,
@@ -44,60 +43,53 @@ export default function CartScreen() {
     );
   }
 
-  // Calculate total before tax
   const totalBeforeTax = calculateTotal(cartItems);
-  
-  // Calculate discount
   const discount = totalBeforeTax - totalAmount;
-  
-  // Calculate PPN 11%
   const taxAmount = totalAmount * 0.11;
 
-// Function to remove item from cart with confirmation
-const handleRemoveItem = (itemCode: string) => {
-  Alert.alert(
-    'Hapus Item?',
-    `Anda yakin ingin menghapus item ${itemCode} dari keranjang?`,
-    [
-      {
-        text: 'Batal',
-        style: 'cancel',
-      },
-      {
-        text: 'Hapus',
-        style: 'destructive',
-        onPress: () => {
-          const updatedItems = cartItems.filter((item) => item.item_code !== itemCode);
-          setCartItems(updatedItems);
-          setTotalAmount(calculateTotal(updatedItems));
+  const handleRemoveItem = (itemCode: string) => {
+    Alert.alert(
+      'Hapus Item?',
+      `Anda yakin ingin menghapus item ${itemCode} dari keranjang?`,
+      [
+        {
+          text: 'Batal',
+          style: 'cancel',
         },
-      },
-    ]
-  );
-};
+        {
+          text: 'Hapus',
+          style: 'destructive',
+          onPress: () => {
+            const updatedItems = cartItems.filter((item) => item.item_code !== itemCode);
+            setCartItems(updatedItems);
+            setTotalAmount(calculateTotal(updatedItems));
+          },
+        },
+      ]
+    );
+  };
 
-// Function to handle checkout
-const handleCheckout = () => {
-  Alert.alert(
-    'Pembayaran',
-    `Total yang harus dibayar: Rp ${totalAmount.toLocaleString()}`,
-    [
-      {
-        text: 'Batal',
-        style: 'cancel',
-      },
-      {
-        text: 'Bayar',
-        style: 'destructive',
-        onPress: () => {
-          setCartItems([]);
-          setTotalAmount(0);
-          navigation.navigate('invoice');
+  const handleCheckout = () => {
+    Alert.alert(
+      'Pembayaran',
+      `Total yang harus dibayar: Rp ${totalAmount.toLocaleString()}`,
+      [
+        {
+          text: 'Batal',
+          style: 'cancel',
         },
-      },
-    ]
-  )
-};
+        {
+          text: 'Bayar',
+          style: 'destructive',
+          onPress: () => {
+            setCartItems([]);
+            setTotalAmount(0);
+            navigation.navigate('invoice');
+          },
+        },
+      ]
+    )
+  };
 
 return (
   <ThemedView style={styles.container}>
@@ -144,12 +136,8 @@ return (
       </View>
     </View>
 
-    <Pressable
-      style={styles.checkoutButton}
-      onPress={handleCheckout}
-    >
-      <Text style={styles.checkoutButtonText}>BAYAR</Text>
-    </Pressable>
+    {/* Checkout Button */}
+    <CustomButton title="BAYAR" onPress={handleCheckout} style={styles.checkoutButton}/>
   </ThemedView>
 );
 }
@@ -239,7 +227,6 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 16,
     color: '#333',
-    // fontWeight: 'bold',
     textAlign: 'right',
   },
   grandTotalLabel: {
@@ -254,12 +241,8 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   checkoutButton: {
+    flex:0,
     marginTop: 20,
-    // backgroundColor: '#007bff',
-    backgroundColor: 'black',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
   },
   checkoutButtonText: {
     color: '#fff',

@@ -4,7 +4,6 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -51,23 +50,10 @@ export default function RootLayout() {
   return (
     <PaperProvider theme={theme}>
       <Stack>
-        {/* Add the Login screen */}
         <Stack.Screen name="login" options={{ headerShown: false }} />
-
-        {/* Point of Sale screen */}
         <Stack.Screen name="point-of-sale" options={{title: "Point of Sale", animation: 'slide_from_right'}} />
-
-        {/* Cart screen */}
         <Stack.Screen name="cart" options={{title: "Keranjang", animation: 'slide_from_right'}} />
-
-        {/* Invoice screen */}
-        <Stack.Screen name="invoice" options={{
-          title: "Invoice", 
-          animation: 'slide_from_right',
-          headerBackVisible: false,
-        }} />
-        
-        {/* The main tab screens */}
+        <Stack.Screen name="invoice" options={{title: "Invoice", animation: 'slide_from_bottom',headerBackVisible: false,}} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </PaperProvider>

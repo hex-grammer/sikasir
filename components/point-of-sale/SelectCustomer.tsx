@@ -3,12 +3,12 @@ import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard } from 
 import { Picker } from '@react-native-picker/picker';
 import CreateCustomerModal from './CreateCustomerModal';
 
-export interface Customer {
+interface iSelectCustomer {
   name: string;
 }
 
 interface SelectCustomerProps {
-  customers: Customer[];
+  customers: iSelectCustomer[];
   onCreateCustomer: (newCustomer: string) => void;
 }
 
@@ -25,7 +25,6 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
   const pickerRef = useRef<any>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Filter customers based on search query
   const filteredCustomers = customers.filter((customer) =>
     customer.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -88,7 +87,6 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
           onBlur={handleBlur}
         />
 
-        {/* Picker for customer selection (visible on focus) */}
         {isPickerVisible && (
           <View style={styles.pickerContainer}>
             <Picker
@@ -106,7 +104,6 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
           </View>
         )}
         
-        {/* Modal for creating a new customer */}
         <CreateCustomerModal
           isVisible={isCreateModalVisible}
           onCreateCustomer={handleCreateCustomer}

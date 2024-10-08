@@ -1,33 +1,23 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  Pressable,
-  Modal,
-  TextInput,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Image,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
+import {StyleSheet,View,Text,Pressable,Modal,TextInput,TouchableWithoutFeedback,Keyboard,Image,Alert,Platform,ScrollView, KeyboardAvoidingView,} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import CustomButton from '../CustomButton';
+import { ThemedText } from '../ThemedText';
+
+export interface iCreateCustomerModal {
+  id_outlet: string;
+  nama_customer: string;
+  ktp: string;
+  alamat: string;
+  fotoKtpUri?: string;
+  email?: string;
+  telpon?: string;
+}
 
 interface CreateCustomerModalProps {
   isVisible: boolean;
   onClose: () => void;
-  onCreateCustomer: (customerData: {
-    id_outlet: string;
-    nama_customer: string;
-    ktp: string;
-    alamat: string;
-    fotoKtpUri?: string;
-    email?: string;
-    telpon?: string;
-  }) => void;
+  onCreateCustomer: (customerData: iCreateCustomerModal) => void;
 }
 
 const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
@@ -101,7 +91,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   
             {/* ID Outlet */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>ID Outlet</Text>
+              <ThemedText>ID Outlet</ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder="ID Outlet"
@@ -112,7 +102,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   
             {/* Nama Customer */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Nama (sesuai KTP)</Text>
+              <ThemedText>Nama (sesuai KTP)</ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder="Nama Customer"
@@ -123,7 +113,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   
             {/* No. KTP */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>KTP</Text>
+              <ThemedText>KTP</ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder="No. KTP"
@@ -134,7 +124,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   
             {/* Alamat */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Alamat (sesuai KTP)</Text>
+              <ThemedText>Alamat (sesuai KTP)</ThemedText>
               <TextInput
                 style={styles.multilineInput}
                 placeholder="Alamat..."
@@ -142,16 +132,14 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
                 onChangeText={setAlamat}
                 multiline={true}
                 numberOfLines={3}
-                verticalAlign="top"
+                textAlignVertical='top'
               />
             </View>
   
             {/* Foto KTP */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Foto KTP</Text>
-              <Pressable style={styles.uploadButton} onPress={pickImage}>
-                <Text style={styles.uploadButtonText}>Upload Foto KTP</Text>
-              </Pressable>
+              <ThemedText>Foto KTP</ThemedText>
+              <CustomButton title="Upload Foto KTP" onPress={pickImage}/>
               {fotoKtpUri && (
                 <Image source={{ uri: fotoKtpUri }} style={styles.imagePreview} />
               )}
@@ -159,7 +147,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   
             {/* Optional fields */}
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Email (optional)</Text>
+              <ThemedText>Email (optional)</ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -170,7 +158,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
             </View>
   
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Telpon (optional)</Text>
+              <ThemedText>Telpon (optional)</ThemedText>
               <TextInput
                 style={styles.input}
                 placeholder="No. Telpon"
@@ -182,13 +170,8 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   
             {/* Buttons */}
             <View style={styles.buttonsContainer}>
-              <Pressable style={styles.cancelButton} onPress={onClose}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </Pressable>
-  
-              <Pressable style={styles.createButton} onPress={handleCreateCustomer}>
-                <Text style={styles.createButtonText}>Create</Text>
-              </Pressable>
+              <CustomButton title="Cancel" type="outline" onPress={onClose}/>
+              <CustomButton title="Create" onPress={handleCreateCustomer}/>
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>
@@ -201,43 +184,35 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'flex-start',
-    // alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 20,
   },
   modalContent: {
-    // width: '100%',
     padding: 20,
+    paddingTop: 10,
     backgroundColor: 'white',
     borderRadius: 10,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 16,
     textAlign: 'center',
+    marginBottom: 8,
   },
   inputContainer: {
     display: 'flex',
-    gap: 2,
-  },
-  label: {
-    // fontSize: 14,
-    // fontWeight: 'bold',
-    // marginBottom: 4,
+    marginBottom: 4,
   },
   input: {
     height: 40,
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 8,
     paddingHorizontal: 8,
     borderRadius: 5,
   },
   multilineInput: {
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 16,
     padding: 8,
     borderRadius: 5,
   },
@@ -254,7 +229,8 @@ const styles = StyleSheet.create({
   imagePreview: {
     width: 100,
     height: 100,
-    marginBottom: 16,
+    marginTop: 4,
+    marginBottom: 4,
     alignSelf: 'center',
   },
   buttonsContainer: {

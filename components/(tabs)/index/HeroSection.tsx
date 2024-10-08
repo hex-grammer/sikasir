@@ -1,6 +1,6 @@
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import Button from "@/components/Button";
+import CustomButton from "@/components/CustomButton";
 import { StyleSheet } from "react-native";
 import React from "react";
 import { UserData } from "@/services/user/getUserData";
@@ -17,18 +17,16 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
         <ThemedView style={styles.heroContainer}>
         {userData ? (
             <>
-            <ThemedText style={styles.heroTitle}>{userData.full_name},</ThemedText>
-            <ThemedText style={styles.heroSubtitle}>Cluster {userData.cluster}</ThemedText>
-            <ThemedText style={styles.heroLargeNumber} type="title">
-                Rp 230.000
-            </ThemedText>
+            <ThemedText type="title">{userData.full_name},</ThemedText>
+            <ThemedText type="subtitle">Cluster {userData.cluster}</ThemedText>
+            <ThemedText style={styles.heroLargeNumber} type="title">Rp 230.000</ThemedText>
             </>
         ) : (
             <ThemedText>Loading user data...</ThemedText>
         )}
         <ThemedView style={styles.heroButtons}>
-            <Button title="Buka POS" onPress={() => {navigation.navigate("point-of-sale");}} style={{flex:1}}/>
-            <Button title="Rekap POS" type="outline" onPress={() => {}} style={{flex:1}}/>
+            <CustomButton title="Buka POS" onPress={() => {navigation.navigate("point-of-sale");}}/>
+            <CustomButton title="Rekap POS" type="outline" onPress={() => {}}/>
         </ThemedView>
         </ThemedView>
     );
@@ -43,17 +41,6 @@ const styles = StyleSheet.create({
     height: "45%",
     width: "100%",
     marginBottom: 12,
-  },
-  heroTitle: {
-    fontSize: 24,
-    lineHeight: 26,
-    fontWeight: "bold",
-    color: "#353636",
-    marginBottom: 4,
-  },
-  heroSubtitle: {
-    fontSize: 22,
-    color: "#353636",
   },
   heroLargeNumber: {
     fontSize: 32,

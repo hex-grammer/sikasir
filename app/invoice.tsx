@@ -1,8 +1,8 @@
-import { ThemedView } from '@/components/ThemedView';
 import { useNavigation } from 'expo-router';
 import React from 'react';
 import { View, Text, FlatList, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { HomeScreenNavigationProp } from './_layout';
+import CustomButton from '@/components/CustomButton';
 
 // Sample data
 const CUSTOMER_INFO = {
@@ -135,7 +135,7 @@ const renderItem = ({ item }: { item: { item_code: string; item_name: string; pr
             </View>
 
             {/* Totals Section */}
-            <View style={styles.totalsSection}>
+            <View>
                 <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Total Before Tax</Text>
                 <Text style={styles.totalValue}>Rp {totalBeforeTax.toLocaleString()}</Text>
@@ -153,24 +153,14 @@ const renderItem = ({ item }: { item: { item_code: string; item_name: string; pr
                 <Text style={styles.totalValue}>Rp {grandTotal.toLocaleString()}</Text>
                 </View>
             </View>
-
         </View>
+
         {/* Buttons Section */}
         <View style={styles.buttonsSection}>
-            <Pressable style={styles.primaryButton} onPress={() => {
-                navigation.navigate('point-of-sale');
-            }}>
-            <Text style={styles.primaryButtonText}>Transaksi Baru</Text>
-            </Pressable>
-            <Pressable style={styles.button} onPress={() => alert("Print Invoice")}>
-            <Text style={styles.buttonText}>Cetak Invoice</Text>
-            </Pressable>
-            <Pressable style={styles.button} onPress={() => alert("Download Invoice")}>
-            <Text style={styles.buttonText}>Download</Text>
-            </Pressable>
-            <Pressable style={styles.button} onPress={() => alert("Send Email")}>
-            <Text style={styles.buttonText}>Kirim Email</Text>
-            </Pressable>
+            <CustomButton title="Transaksi Baru" onPress={() => {navigation.navigate('point-of-sale');}}/>
+            <CustomButton title="Print Invoice" type="outline" onPress={() => alert("Print Invoice")}/>
+            <CustomButton title="Download Invoice" type="outline" onPress={() => alert("Download Invoice")}/>
+            <CustomButton title="Kirim Email" type="outline" onPress={() => alert("Send Email")}/>
         </View>
     </ScrollView>
   );
@@ -230,9 +220,6 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
   },
-  totalsSection: {
-    marginBottom: 8,
-  },
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -249,30 +236,6 @@ const styles = StyleSheet.create({
     gap: 8,
     padding:20,
     marginBottom: 80
-  },
-  primaryButton: {
-    backgroundColor: 'black',
-    borderRadius: 5,
-    alignItems: 'center',
-    height: 40,
-    width: '100%',
-    justifyContent: 'center',
-  },
-  primaryButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  button: {
-    borderColor: 'black',
-    borderWidth: 1,
-    borderRadius: 5,
-    alignItems: 'center',
-    height: 40,
-    width: '100%',
-    justifyContent: 'center',
-  },
-  buttonText: {
-    color: '#333',
   },
 });
 

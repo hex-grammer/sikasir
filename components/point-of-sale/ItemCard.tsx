@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import InsertSerialNumber, { SerialNumber } from './InsertSerialNumber';
+import InsertSerialNumber, { iSerialNumber } from './InsertSerialNumber';
+import { ThemedView } from '../ThemedView';
+import { ThemedText } from '../ThemedText';
 
-export interface ItemCardProps {
-  item: {
-    item_group: string;
-    item_code: string;
-    item_name: string;
-    price: number;
-    discount: number;
-    stock: number;
-  };
+export interface iItemCart {
+  item_group: string;
+  item_code: string;
+  item_name: string;
+  price: number;
+  discount: number;
+  stock: number;
 }
+
+interface ItemCardProps {item: iItemCart}
 
 const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const [quantity, setQuantity] = useState(1);
   const [inputValue, setInputValue] = useState<string>('1');
   const [isModalVisible, setModalVisible] = useState(false);
-  const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>([]);
+  const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>([]);
   const discountedPrice = item.price - item.discount;
 
-  const handleAddToCart = (serials: SerialNumber[]) => {
+  const handleAddToCart = (serials: iSerialNumber[]) => {
     console.log('Serial Numbers:', serials);
     setModalVisible(false);
     setQuantity(1);
@@ -58,33 +60,33 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   };
 
   return (
-    <View style={styles.card}>
+    <ThemedView style={styles.card}>
       {/* Item Details */}
-      <View style={styles.topRow}>
-        <Text style={styles.itemGroup}>{item.item_group}</Text>
-        <View style={styles.stockChip}>
-          <Text style={styles.stockText}>Stock: {item.stock}</Text>
-        </View>
-      </View>
+      <ThemedView style={styles.topRow}>
+        <ThemedText style={styles.itemGroup}>{item.item_group}</ThemedText>
+        <ThemedView style={styles.stockChip}>
+          <ThemedText style={styles.stockText}>Stock: {item.stock}</ThemedText>
+        </ThemedView>
+      </ThemedView>
 
-      <View style={styles.middleRow}>
-        <Text style={styles.itemCode}>{item.item_code}</Text>
-        <Text style={styles.itemName}>{item.item_name}</Text>
-      </View>
+      <ThemedView style={styles.middleRow}>
+        <ThemedText style={styles.itemCode}>{item.item_code}</ThemedText>
+        <ThemedText style={styles.itemName}>{item.item_name}</ThemedText>
+      </ThemedView>
 
-      <View style={styles.bottomRow}>
+      <ThemedView style={styles.bottomRow}>
         {/* Price Section */}
-        <View style={styles.priceInfo}>
+        <ThemedView style={styles.priceInfo}>
           {item.discount > 0 && (
-            <Text style={styles.originalPrice}>Rp {item.price.toLocaleString()}</Text>
+            <ThemedText style={styles.originalPrice}>Rp {item.price.toLocaleString()}</ThemedText>
           )}
-          <Text style={styles.discountedPrice}>Rp {discountedPrice.toLocaleString()}</Text>
-        </View>
+          <ThemedText style={styles.discountedPrice}>Rp {discountedPrice.toLocaleString()}</ThemedText>
+        </ThemedView>
 
         {/* Quantity and Cart Actions */}
-        <View style={styles.cartActions}>
+        <ThemedView style={styles.cartActions}>
           <Pressable style={styles.quantityButton} onPress={handleDecrease}>
-            <Text style={styles.quantityButtonText}>-</Text>
+            <ThemedText style={styles.quantityButtonText}>-</ThemedText>
           </Pressable>
 
           <TextInput
@@ -96,7 +98,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           />
 
           <Pressable style={styles.quantityButton} onPress={handleIncrease}>
-            <Text style={styles.quantityButtonText}>+</Text>
+            <ThemedText style={styles.quantityButtonText}>+</ThemedText>
           </Pressable>
 
           <Pressable
@@ -106,12 +108,12 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
               setQuantity(parseInt(inputValue, 10));
             }}
           >
-            <Text style={styles.addToCartButtonText}>
+            <ThemedText style={styles.addToCartButtonText}>
               <FontAwesome6 name="cart-plus" size={18} color="black" />
-            </Text>
+            </ThemedText>
           </Pressable>
-        </View>
-      </View>
+        </ThemedView>
+      </ThemedView>
 
       <InsertSerialNumber
         quantity={quantity}
@@ -122,7 +124,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
         onClose={() => setModalVisible(false)}
         setQuantity={setQuantity} // Pass quantity updater to InsertSerialNumber
       />
-    </View>
+    </ThemedView>
   );
 };
 

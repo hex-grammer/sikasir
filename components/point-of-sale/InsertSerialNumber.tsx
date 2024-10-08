@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Pressable, Alert, Modal, StyleSheet } from 'react-native';
+import { ThemedText } from '../ThemedText';
+import CustomButton from '../CustomButton';
 
-export interface SerialNumber {
+export interface iSerialNumber {
   id: string;
   value: string;
 }
@@ -9,23 +11,15 @@ export interface SerialNumber {
 interface InsertSerialNumberProps {
   quantity: number;
   itemCode: string;
-  initialSerialNumbers: SerialNumber[];
+  initialSerialNumbers: iSerialNumber[];
   isModalVisible: boolean;
-  onSave: (serials: SerialNumber[]) => void;
+  onSave: (serials: iSerialNumber[]) => void;
   onClose: () => void;
-  setQuantity: (newQuantity: number) => void; // Add this prop to sync quantity
+  setQuantity: (newQuantity: number) => void;
 }
 
-const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({
-  quantity,
-  itemCode,
-  initialSerialNumbers,
-  isModalVisible,
-  onSave,
-  onClose,
-  setQuantity, // Use setQuantity here
-}) => {
-  const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>(
+const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({quantity,itemCode,initialSerialNumbers,isModalVisible,onSave,onClose,setQuantity,}) => {
+  const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>(
     initialSerialNumbers.length
       ? initialSerialNumbers
       : Array.from({ length: quantity }, (_, i) => ({ id: String(i), value: '' }))
@@ -123,11 +117,8 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({
     <Modal visible={isModalVisible} animationType="slide" transparent={true}>
       <View style={styles.modalContainer}>
         <View style={styles.container}>
-          <Text style={styles.title}>Serial Number {itemCode}</Text>
-
-          {/* total quantity */}
-          <Text style={styles.totalQty}>Total Quantity: {quantity}</Text>
-
+          <ThemedText type='subtitle' style={styles.title}>Serial Number {itemCode}</ThemedText>
+          <ThemedText>Total Quantity: {quantity}</ThemedText>
           <TextInput
             style={styles.batchInput}
             value={batchInput}
@@ -137,9 +128,7 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({
             multiline={true}
             numberOfLines={3}
           />
-          <Pressable onPress={handleBatchInput} style={styles.batchButton}>
-            <Text style={styles.batchButtonText}>Insert Serial Numbers</Text>
-          </Pressable>
+          <CustomButton title="Insert Serial Numbers" onPress={handleBatchInput} style={styles.batchButton}/>
 
           <FlatList
             data={serialNumbers}
@@ -157,21 +146,15 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({
                 </Pressable>
               </View>
             )}
-            ListFooterComponent={() => (
-              <Pressable onPress={handleAddSerial} style={styles.addSerialButton}>
-                <Text style={styles.addSerialButtonText}>Add Serial Number</Text>
-              </Pressable>
-            )}
+            ListFooterComponent={
+              <CustomButton title="Add Serial Number" onPress={handleAddSerial} type='outline'/>
+            }
           />
 
           {/* Save and Close Buttons */}
           <View style={styles.buttonsContainer}>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </Pressable>
-            <Pressable onPress={handleSave} style={styles.saveButton}>
-              <Text style={styles.saveButtonText}>Add to cart</Text>
-            </Pressable>
+            <CustomButton title="Close" onPress={onClose} type='outline'/>
+            <CustomButton title="Add to cart" onPress={handleSave}/>
           </View>
         </View>
       </View>
@@ -195,13 +178,7 @@ const styles = StyleSheet.create({
     minWidth: '90%',
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
     marginBottom: 16,
-  },
-  totalQty: {
-    // fontSize: 16,
-    marginBottom: 8,
   },
   batchInput: {
     borderColor: '#ddd',
@@ -212,9 +189,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   batchButton: {
-    backgroundColor: '#000',
-    padding: 12,
-    borderRadius: 4,
+    flex:0,
     marginBottom: 16,
   },
   batchButtonText: {
