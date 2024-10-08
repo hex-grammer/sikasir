@@ -1,3 +1,5 @@
+import { Colors } from '@/constants/Colors';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
 import { Text, StyleSheet, Pressable, GestureResponderEvent, ViewStyle, TextStyle } from 'react-native';
 
@@ -26,9 +28,10 @@ export default function CustomButton({onPress,title = 'Save',type = 'primary',ch
 }
 
 const getButtonStyle = (type: ButtonProps['type']): ViewStyle => {
+  const colorScheme = useColorScheme();
   switch (type) {
     case 'primary':
-      return { backgroundColor: 'black' };
+      return { backgroundColor: Colors[colorScheme ?? 'light'].tint, };
     case 'secondary':
       return { backgroundColor: '#6C757D' };
     case 'outline':
