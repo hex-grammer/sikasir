@@ -6,6 +6,7 @@ import { getClusterById } from "../cluster/getClusterById";
 const FRAPPE_BASE_URL = 'http://157.245.58.91:8080'; // Replace with your Frappe instance
 
 export type UserData = {
+    email: string;
     full_name: string;
     cluster: string;
 };
@@ -31,7 +32,7 @@ export const getUserData = async (): Promise<UserData> => {
 
         const userId = loggedUserResponse.message;
 
-        const fields = ['full_name', 'cluster'];
+        const fields = ['email','full_name', 'cluster'];
         const filters = [[`name`, `=`, userId]];
         const userUrl = `${FRAPPE_BASE_URL}/api/resource/User?fields=${JSON.stringify(fields)}&filters=${JSON.stringify(filters)}`;
         const { data: userResponse } = await axios.get(userUrl, getHeaders(sessionId));
@@ -40,6 +41,7 @@ export const getUserData = async (): Promise<UserData> => {
         const cluster = await getClusterById(userData.cluster);
 
         return {
+            email: userData.email,
             full_name: userData.full_name,
             cluster: cluster.nama_cluster,
         };

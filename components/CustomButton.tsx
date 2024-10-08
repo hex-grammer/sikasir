@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import React from 'react';
-import { Text, StyleSheet, Pressable, GestureResponderEvent, ViewStyle, TextStyle } from 'react-native';
+import { Text, StyleSheet, Pressable, GestureResponderEvent, ViewStyle, TextStyle, ActivityIndicator } from 'react-native';
 
 interface ButtonProps {
   onPress: (event: GestureResponderEvent) => void;
@@ -10,18 +10,31 @@ interface ButtonProps {
   children?: React.ReactNode;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  isLoading?: boolean;
 }
 
-export default function CustomButton({onPress,title = 'Save',type = 'primary',children,style, textStyle,}: ButtonProps) {
+export default function CustomButton({
+  onPress,
+  title = 'Save',
+  type = 'primary',
+  children,
+  style,
+  textStyle,
+  isLoading = false, // Default is false
+}: ButtonProps) {
   const buttonStyle = getButtonStyle(type);
   const buttonTextStyle = getTextStyle(type);
 
   return (
-    <Pressable style={[styles.button, buttonStyle, style]} onPress={onPress}>
-      {children ? (
-        children
+    <Pressable style={[styles.button, buttonStyle, style]} onPress={onPress} disabled={isLoading}>
+      {isLoading ? (
+        <ActivityIndicator color={buttonTextStyle.color || 'white'} /> // Show loading spinner when isLoading is true
       ) : (
-        <Text style={[styles.text, buttonTextStyle, textStyle]}>{title}</Text>
+        children ? (
+          children
+        ) : (
+          <Text style={[styles.text, buttonTextStyle, textStyle]}>{title}</Text>
+        )
       )}
     </Pressable>
   );
@@ -31,7 +44,7 @@ const getButtonStyle = (type: ButtonProps['type']): ViewStyle => {
   const colorScheme = useColorScheme();
   switch (type) {
     case 'primary':
-      return { backgroundColor: Colors[colorScheme ?? 'light'].tint, };
+      return { backgroundColor: Colors[colorScheme ?? 'light'].tint };
     case 'secondary':
       return { backgroundColor: '#6C757D' };
     case 'outline':
@@ -58,7 +71,7 @@ const getTextStyle = (type: ButtonProps['type']): TextStyle => {
 
 const styles = StyleSheet.create({
   button: {
-    flex:1,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 8,

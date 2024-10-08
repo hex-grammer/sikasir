@@ -9,7 +9,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import HeroSection from "@/components/(tabs)/index/HeroSection";
 import HistoryList from "@/components/(tabs)/index/HistoryList";
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList,"(tabs)">;
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
   const [userData, setUserData] = useState<UserData | null>(null);

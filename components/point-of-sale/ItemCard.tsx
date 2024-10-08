@@ -24,7 +24,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const discountedPrice = item.price - item.discount;
 
   const handleAddToCart = (serials: iSerialNumber[]) => {
-    console.log('Serial Numbers:', serials);
+    // console.log('Serial Numbers:', serials);
     setModalVisible(false);
     setQuantity(1);
     setInputValue('1');
