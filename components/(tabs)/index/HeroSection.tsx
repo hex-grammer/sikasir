@@ -3,13 +3,13 @@ import { Alert, StyleSheet } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import CustomButton from "@/components/CustomButton";
-import { UserData } from "@/services/user/getUserData";
+import { iUserData } from "@/services/user/getUserData";
 import { openPOS } from "@/services/pos/openPOS";
 import { HomeScreenNavigationProp } from "@/app/_layout";
 import { useNavigation } from "expo-router";
 
 interface HeroSectionProps {
-  userData: UserData | null;
+  userData: iUserData | null;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {

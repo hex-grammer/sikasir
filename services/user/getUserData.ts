@@ -1,11 +1,10 @@
-// services/user/getUserData.ts
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { getClusterById } from "../cluster/getClusterById";
 
-const FRAPPE_BASE_URL = 'http://157.245.58.91:8080'; // Replace with your Frappe instance
+// const FRAPPE_BASE_URL = 'http://157.245.58.91:8080'; // Replace with your Frappe instance
 
-export type UserData = {
+export interface iUserData {
     email: string;
     full_name: string;
     cluster: string;
@@ -15,13 +14,13 @@ const getHeaders = (sessionId: string) => ({
     headers: { Cookie: sessionId },
 });
 
-export const getUserData = async (): Promise<UserData> => {
+export const getUserData = async (): Promise<iUserData> => {
     try {
         const sessionId = await AsyncStorage.getItem('sid');
         if (!sessionId) throw new Error('No session ID found');
 
         const { data: loggedUserResponse } = await axios.get(
-            `${FRAPPE_BASE_URL}/api/method/frappe.auth.get_logged_user`, 
+            `${process.env.EXPO_PUBLIC_API_URL}/api/method/frappe.auth.get_logged_user`, 
             getHeaders(sessionId)
         );
 
@@ -34,7 +33,7 @@ export const getUserData = async (): Promise<UserData> => {
 
         const fields = ['email','full_name', 'cluster'];
         const filters = [[`name`, `=`, userId]];
-        const userUrl = `${FRAPPE_BASE_URL}/api/resource/User?fields=${JSON.stringify(fields)}&filters=${JSON.stringify(filters)}`;
+        const userUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/resource/User?fields=${JSON.stringify(fields)}&filters=${JSON.stringify(filters)}`;
         const { data: userResponse } = await axios.get(userUrl, getHeaders(sessionId));
         const userData = userResponse.data[0];
 

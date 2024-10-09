@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   FlatList,
@@ -13,6 +13,9 @@ import ItemCard, { iItemCart } from "@/components/point-of-sale/ItemCard";
 import { SelectCustomer } from "@/components/point-of-sale/SelectCustomer";
 import { ThemedView } from "@/components/ThemedView";
 import { CartButton } from "@/components/point-of-sale/CartButton";
+import { getPOSItems } from "@/services/pos/getPOSItems";
+import { getUserData, iUserData } from "@/services/user/getUserData";
+import { checkOpeningEntry } from "@/services/pos/checkOpeningEntry";
 
 interface Customer {
   name: string;
@@ -95,8 +98,43 @@ const CUSTOMER_LIST: Customer[] = [
 ];
 
 export default function PointOfSaleScreen() {
+  const [userData, setUserData] = useState<iUserData | null>(null);
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const fetchUserData = async () => {
+    try {
+      const user = await getUserData();
+      setUserData(user);
+    } catch (error: any) {
+      if (error.message === "No session ID found") {
+        Alert.alert("Session expired", "Redirecting to login...");
+        navigation.navigate("login");
+      } else {
+        Alert.alert("Error", "Failed to fetch user data");
+      }
+    }
+  };
+
+  const fetchPOSItems = async () => {
+    try {    
+      const profileDetail = await checkOpeningEntry(userData?.email);
+      console.log("Profile Detail:", profileDetail); 
+      const posProfile = "CASH CANVAS (PALANGKA) DEWI SINTA";
+      const items = await getPOSItems(posProfile);
+      console.log("POS Items:", items); 
+    } catch (error) {
+      console.error("Error fetching POS items:", error); 
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, [navigation]);
+  
+  useEffect(() => {
+    userData && fetchPOSItems();
+  }, [userData]);
 
   const handleCreateCustomer = () => {
     console.log("Create New Customer button pressed");
