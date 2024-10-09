@@ -23,7 +23,7 @@ export const getPOSItems = async (posProfile: string) => {
 
     const data = await response.json();
     const result = data.message;
-    console.log("POS Items:", result);
+    // console.log("POS Items:", result);
     
     if (!result.items?.length) {
       throw new Error("No items found");

@@ -10,33 +10,24 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { HomeScreenNavigationProp } from "./_layout";
 import ItemCard, { iItemCart } from "@/components/point-of-sale/ItemCard";
-import { SelectCustomer } from "@/components/point-of-sale/SelectCustomer";
+import { SelectCustomer, iSelectCustomer } from "@/components/point-of-sale/SelectCustomer";
 import { ThemedView } from "@/components/ThemedView";
 import { CartButton } from "@/components/point-of-sale/CartButton";
 import { getPOSItems } from "@/services/pos/getPOSItems";
 import { getUserData, iUserData } from "@/services/user/getUserData";
 import { checkOpeningEntry } from "@/services/pos/checkOpeningEntry";
-
-interface Customer {
-  name: string;
-}
-
-const CUSTOMER_LIST: Customer[] = [
-  {
-    name: "40123456 - Masniah",
-  },
-  {
-    name: "40123457 - HARMOKO",
-  },
-];
+import { searchCustomer } from "@/services/pos/searchCustomer";
 
 export default function PointOfSaleScreen() {
-  const [userData, setUserData] = useState<iUserData | null>(null);
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [userData, setUserData] = useState<iUserData | null>(null);
+  const [searchCustomerQuery, setSearchCustomerQuery] = useState("");
+  const [searchItemQuery, setSearchItemQuery] = useState("");
+  const [customerList, setCustomerList] = useState<iSelectCustomer[]>([]);
+  const [itemList, setItemList] = useState<iItemCart[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
 
-  const [itemList, setItemList] = useState<iItemCart[]>([])
-
+  // Fetch user data
   const fetchUserData = async () => {
     try {
       const user = await getUserData();
@@ -51,40 +42,60 @@ export default function PointOfSaleScreen() {
     }
   };
 
+  // Fetch POS items based on user data
   const fetchPOSItems = async () => {
-    try {    
+    try {
       const profileDetail = await checkOpeningEntry(userData?.email);
-      console.log("Profile Detail:", profileDetail); 
-      const posProfile = "CASH CANVAS (PALANGKA) DEWI SINTA";
+      const posProfile = profileDetail.message[0].pos_profile;
       const items = await getPOSItems(posProfile);
-      // set default items.discount if not exist
-      items.forEach((item:iItemCart) => {
-        if (!item.discount) {
-          item.discount = 0;
-        }
+      items.forEach((item: iItemCart) => {
+        if (!item.discount) item.discount = 0;
       });
       setItemList(items);
     } catch (error) {
-      console.error("Error fetching POS items:", error); 
+      console.error("Error fetching POS items:", error);
     }
+  };
+
+  // Fetch customers
+  const fetchCustomers = async (query: string) => {
+    try {
+      const customers = await searchCustomer(query);
+      setCustomerList(customers);
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      Alert.alert("Error", "Failed to fetch customers.");
+    }
+  };
+
+  const handleCreateCustomer = (newCustomer: string) => {
+    console.log("Create New Customer:", newCustomer);
+    Alert.alert("Create Customer", `Nama: ${newCustomer}`);
+  };
+
+  const handleSearchCustomerChange = (text: string) => {
+    setSearchCustomerQuery(text);
+  };
+
+  const handleSearchItemChange = (text: string) => {
+    setSearchItemQuery(text);
   };
 
   useEffect(() => {
     fetchUserData();
   }, [navigation]);
-  
+
   useEffect(() => {
-    userData && fetchPOSItems();
+    if (userData) fetchPOSItems();
   }, [userData]);
 
-  const handleCreateCustomer = () => {
-    console.log("Create New Customer button pressed");
-    Alert.alert("Create Customer", `Nama: ${CUSTOMER_LIST[0].name}\n`);
-  };
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchCustomers(searchCustomerQuery);
+    }, 1000);
 
-  const handleSearchInputChange = (text: string) => {
-    setSearchQuery(text);
-  };
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchCustomerQuery]);
 
   return (
     <KeyboardAvoidingView
@@ -92,12 +103,21 @@ export default function PointOfSaleScreen() {
       style={styles.container}
     >
       <SelectCustomer
-        customers={CUSTOMER_LIST}
+        customers={customerList}
         onCreateCustomer={handleCreateCustomer}
+        selectedCustomer={selectedCustomer}
+        onCustomerSelect={setSelectedCustomer}
+        searchQuery={searchCustomerQuery}
+        onSearchInputChange={handleSearchCustomerChange}
       />
 
       <ThemedView style={styles.searchAndCartContainer}>
-        <TextInput value={searchQuery} onChangeText={handleSearchInputChange} style={styles.searchInput} placeholder="Search by item name or code" />
+        <TextInput
+          value={searchItemQuery}
+          onChangeText={handleSearchItemChange}
+          style={styles.searchInput}
+          placeholder="Search by item name or code"
+        />
         <CartButton qty={68} onPress={() => navigation.navigate("cart")} />
       </ThemedView>
 
@@ -111,6 +131,7 @@ export default function PointOfSaleScreen() {
     </KeyboardAvoidingView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

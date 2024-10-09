@@ -1,109 +1,116 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import CreateCustomerModal from './CreateCustomerModal';
+import React, { useState, useRef, useEffect } from "react";
+import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import CreateCustomerModal from "./CreateCustomerModal";
+import { Entypo } from "@expo/vector-icons";
 
-interface iSelectCustomer {
-  name: string;
+export interface iSelectCustomer {
+  value: string;
+  description: string;
 }
 
 interface SelectCustomerProps {
   customers: iSelectCustomer[];
   onCreateCustomer: (newCustomer: string) => void;
+  selectedCustomer: string | null;
+  onCustomerSelect: (customer: string) => void;
+  searchQuery: string;
+  onSearchInputChange: (text: string) => void;
 }
 
 export const SelectCustomer: React.FC<SelectCustomerProps> = ({
   customers,
   onCreateCustomer,
+  selectedCustomer,
+  onCustomerSelect,
+  searchQuery,
+  onSearchInputChange,
 }) => {
-  const [selectedCustomer, setSelectedCustomer] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
-  const [newCustomerName, setNewCustomerName] = useState('');
-
+  const [isClearIconVisible, setClearIconVisible] = useState(false);
+  const [newCustomerName, setNewCustomerName] = useState("");
   const pickerRef = useRef<any>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const filteredCustomers = customers.filter((customer) =>
-    customer.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const handleSelectCustomer = (value: string) => {
-    if (value === 'create_new_customer') {
+    if (value === "create_new_customer") {
       setCreateModalVisible(true);
     } else {
-      setSelectedCustomer(value);
-      setSearchQuery(value); 
+      onCustomerSelect(value);
       setPickerVisible(false);
     }
   };
 
   const handleCreateCustomer = () => {
     const trimmedCustomerName = newCustomerName.trim();
-    if (!trimmedCustomerName) {
-      return;
-    }
-
-    console.log('Creating customer:', trimmedCustomerName);
-    
+    if (!trimmedCustomerName) return;
     onCreateCustomer(trimmedCustomerName);
-    setNewCustomerName('');
+    setNewCustomerName("");
     setCreateModalVisible(false);
   };
 
   const handleFocus = () => {
     setPickerVisible(true);
+    searchQuery !== "" && setClearIconVisible(true);
   };
-
   const handleBlur = () => {
     setPickerVisible(false);
-    if (searchQuery.trim() === '') {
-      setSearchQuery(selectedCustomer);
-    }
+    setClearIconVisible(false);
   };
 
-  const handleSearchInputChange = (text: string) => {
-    setSearchQuery(text);
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
+  useEffect(() => {
+    if (isPickerVisible && searchQuery !== "") {
       pickerRef.current?.focus();
-    }, 1000);
-  };
+    }
+  }, [customers]);
+
+  useEffect(() => {
+    if (searchQuery || selectedCustomer) {
+      setClearIconVisible(true);
+    } else {
+      setClearIconVisible(false);
+    }
+  }, [searchQuery, selectedCustomer]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Select customers..."
-          value={searchQuery}
-          onChangeText={handleSearchInputChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-        />
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search customers..."
+            value={selectedCustomer || searchQuery}
+            onChangeText={onSearchInputChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+          />
+          {isClearIconVisible && 
+            <Entypo name="circle-with-cross" size={24} color="black" style={styles.searchClearIcon}
+              onPress={() => {
+                onSearchInputChange("");
+                onCustomerSelect('');
+              }}
+            />
+          }
+        </View>
 
         {isPickerVisible && (
           <View style={styles.pickerContainer}>
             <Picker
               ref={pickerRef}
-              selectedValue={selectedCustomer}
+              selectedValue={selectedCustomer || "create_new_customer"}
               onValueChange={handleSelectCustomer}
               style={styles.picker}
               mode="dropdown"
             >
-              {filteredCustomers.map((customer, index) => (
-                <Picker.Item key={index} label={customer.name} value={customer.name} />
+              {customers.map((customer) => (
+                <Picker.Item key={customer.value} label={customer.value} value={customer.value} />
               ))}
-              <Picker.Item label="+ Buat Customer Baru" value="create_new_customer" />
+              <Picker.Item label="+ Create New Customer" value="create_new_customer" />
             </Picker>
           </View>
         )}
-        
+
         <CreateCustomerModal
           isVisible={isCreateModalVisible}
           onCreateCustomer={handleCreateCustomer}
@@ -119,13 +126,26 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
   },
+  searchContainer: {
+    position: 'relative',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   searchInput: {
     height: 40,
+    flex: 1,
     borderColor: '#ccc',
     backgroundColor: '#fafafa',
     borderWidth: 1,
     paddingHorizontal: 8,
     borderRadius: 5,
+  },
+  searchClearIcon: {
+    position: 'absolute',
+    color: '#9a9a9a',
+    right: 8,
+    top: 8,
   },
   pickerContainer: {
     borderColor: '#ccc',
