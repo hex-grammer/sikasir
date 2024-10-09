@@ -1,6 +1,6 @@
 import { Alert } from "react-native";
 
-export const getPOSItems = async (posProfile: string) => {
+export const getPOSItems = async (posProfile: string, searchQuery:string) => {
   try {
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_API_URL}/api/method/erpnext.selling.page.point_of_sale.point_of_sale.get_items`,
@@ -11,7 +11,7 @@ export const getPOSItems = async (posProfile: string) => {
           start: 0,
           page_length: 40,
           price_list: "Harga Jual RS Palangkaraya",
-          search_term: "",
+          search_term: searchQuery,
           pos_profile: posProfile,
         }),
       }
@@ -22,14 +22,7 @@ export const getPOSItems = async (posProfile: string) => {
     }
 
     const data = await response.json();
-    const result = data.message;
-    // console.log("POS Items:", result);
-    
-    if (!result.items?.length) {
-      throw new Error("No items found");
-    }
-
-    return result.items;
+    return data.message.items || [];
   } catch (error: any) {
     Alert.alert("Error", error.message || "Failed to fetch POS items. Please try again.");
     throw error;
