@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, TextInput, StyleSheet } from 'react-native';
+import { Pressable, TextInput, StyleSheet } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import InsertSerialNumber, { iSerialNumber } from './InsertSerialNumber';
 import { ThemedView } from '../ThemedView';
 import { ThemedText } from '../ThemedText';
 
 export interface iItemCart {
-  item_group: string;
-  item_code: string;
-  item_name: string;
-  price: number;
+  item_code: string;    
+  item_name: string;           
+  price_list_rate: number;   
+  actual_qty: number;         
+  description: string;        
+  currency: string;            
+  is_stock_item: boolean;     
+  uom: string;                
+  batch_no?: string | null;   
+  item_image?: string | null; 
+  item_group?: string;
   discount: number;
-  stock: number;
 }
 
 interface ItemCardProps {item: iItemCart}
@@ -21,7 +27,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   const [inputValue, setInputValue] = useState<string>('1');
   const [isModalVisible, setModalVisible] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>([]);
-  const discountedPrice = item.price - item.discount;
+  const discountedPrice = item.price_list_rate - item.discount;
 
   const handleAddToCart = (serials: iSerialNumber[]) => {
     // console.log('Serial Numbers:', serials);
@@ -31,8 +37,8 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   };
 
   const handleIncrease = () => {
-    setQuantity(prev => (prev < item.stock ? prev + 1 : prev));
-    setInputValue(String(quantity < item.stock ? quantity + 1 : quantity));
+    setQuantity(prev => (prev < item.actual_qty ? prev + 1 : prev));
+    setInputValue(String(quantity < item.actual_qty ? quantity + 1 : quantity));
   };
   
   const handleDecrease = () => {
@@ -41,7 +47,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
   };
 
   const handleQuantityChange = (value: string) => {
-    if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= item.stock)) {
+    if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= item.actual_qty)) {
       setInputValue(value);
     } else {
       setInputValue(inputValue);
@@ -63,14 +69,15 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
     <ThemedView style={styles.card}>
       {/* Item Details */}
       <ThemedView style={styles.topRow}>
-        <ThemedText style={styles.itemGroup}>{item.item_group}</ThemedText>
+        {/* <ThemedText style={styles.itemGroup}>{item.item_group}</ThemedText> */}
+        <ThemedText style={styles.itemGroup}>{item.item_code}</ThemedText>
         <ThemedView style={styles.stockChip}>
-          <ThemedText style={styles.stockText}>Stock: {item.stock}</ThemedText>
+          <ThemedText style={styles.stockText}>Stock: {item.actual_qty}</ThemedText>
         </ThemedView>
       </ThemedView>
 
       <ThemedView style={styles.middleRow}>
-        <ThemedText style={styles.itemCode}>{item.item_code}</ThemedText>
+        {/* <ThemedText style={styles.itemCode}>{item.item_code}</ThemedText> */}
         <ThemedText style={styles.itemName}>{item.item_name}</ThemedText>
       </ThemedView>
 
@@ -78,7 +85,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
         {/* Price Section */}
         <ThemedView style={styles.priceInfo}>
           {item.discount > 0 && (
-            <ThemedText style={styles.originalPrice}>Rp {item.price.toLocaleString()}</ThemedText>
+            <ThemedText style={styles.originalPrice}>Rp {item.price_list_rate.toLocaleString()}</ThemedText>
           )}
           <ThemedText style={styles.discountedPrice}>Rp {discountedPrice.toLocaleString()}</ThemedText>
         </ThemedView>
@@ -152,7 +159,8 @@ const styles = StyleSheet.create({
   itemGroup: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#888',
+    color: '#000',
+    // color: '#888',
   },
   stockChip: {
     backgroundColor: '#eee',

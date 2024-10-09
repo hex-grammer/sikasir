@@ -21,73 +21,6 @@ interface Customer {
   name: string;
 }
 
-const ITEM_LIST: iItemCart[] = [
-  {
-    item_group: "Voucher",
-    item_code: "PKT408",
-    item_name: "Voucher 1.5GB 3 Hari Zona 3",
-    price: 47000,
-    discount: 8000,
-    stock: 258,
-  },
-  {
-    item_group: "Voucher",
-    item_code: "PKT409",
-    item_name: "Voucher 3GB 5 Hari Zona 3",
-    price: 85000,
-    discount: 0,
-    stock: 150,
-  },
-  {
-    item_group: "Voucher",
-    item_code: "PKT410",
-    item_name: "Voucher 1.5GB 3 Hari Zona 3",
-    price: 47000,
-    discount: 8000,
-    stock: 258,
-  },
-  {
-    item_group: "Voucher",
-    item_code: "PKT411",
-    item_name: "Voucher 3GB 5 Hari Zona 3",
-    price: 85000,
-    discount: 0,
-    stock: 150,
-  },
-  {
-    item_group: "Voucher",
-    item_code: "PKT412",
-    item_name: "Voucher 1.5GB 3 Hari Zona 3",
-    price: 47000,
-    discount: 8000,
-    stock: 258,
-  },
-  {
-    item_group: "Voucher",
-    item_code: "PKT413",
-    item_name: "Voucher 3GB 5 Hari Zona 3",
-    price: 85000,
-    discount: 0,
-    stock: 150,
-  },
-  {
-    item_group: "Voucher",
-    item_code: "PKT414",
-    item_name: "Voucher 1.5GB 3 Hari Zona 3",
-    price: 47000,
-    discount: 8000,
-    stock: 258,
-  },
-  {
-    item_group: "Voucher",
-    item_code: "PKT415",
-    item_name: "Voucher 3GB 5 Hari Zona 3",
-    price: 85000,
-    discount: 0,
-    stock: 150,
-  },
-];
-
 const CUSTOMER_LIST: Customer[] = [
   {
     name: "40123456 - Masniah",
@@ -101,6 +34,8 @@ export default function PointOfSaleScreen() {
   const [userData, setUserData] = useState<iUserData | null>(null);
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const [itemList, setItemList] = useState<iItemCart[]>([])
 
   const fetchUserData = async () => {
     try {
@@ -122,7 +57,13 @@ export default function PointOfSaleScreen() {
       console.log("Profile Detail:", profileDetail); 
       const posProfile = "CASH CANVAS (PALANGKA) DEWI SINTA";
       const items = await getPOSItems(posProfile);
-      console.log("POS Items:", items); 
+      // set default items.discount if not exist
+      items.forEach((item:iItemCart) => {
+        if (!item.discount) {
+          item.discount = 0;
+        }
+      });
+      setItemList(items);
     } catch (error) {
       console.error("Error fetching POS items:", error); 
     }
@@ -161,7 +102,7 @@ export default function PointOfSaleScreen() {
       </ThemedView>
 
       <FlatList
-        data={ITEM_LIST}
+        data={itemList}
         keyExtractor={(item) => item.item_code}
         renderItem={({ item }: { item: iItemCart }) => <ItemCard item={item} />}
         showsVerticalScrollIndicator={false}
