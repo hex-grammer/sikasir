@@ -11,14 +11,14 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, '
 export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useNavigation<LoginScreenNavigationProp>(); // Typed navigation
-
+  const navigation = useNavigation<LoginScreenNavigationProp>(); 
+  
   const handleLogin = async () => {
     try {
       const success = await login(username, password);
       if (success) {
         Alert.alert('Success', 'Logged in successfully!');
-        navigation.navigate('(tabs)'); // Navigate to the home screen on successful login
+        navigation.navigate('(tabs)');
       }
     } catch (error) {
       Alert.alert('Login Failed', 'Please check your credentials.');
