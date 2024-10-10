@@ -1,6 +1,6 @@
 import { useNavigation } from 'expo-router';
 import React from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ScrollView } from 'react-native';
 import { HomeScreenNavigationProp } from './_layout';
 import CustomButton from '@/components/CustomButton';
 
@@ -215,10 +215,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
-  },
-  itemTotal: {
-    flex: 1,
-    textAlign: 'right',
   },
   totalRow: {
     flexDirection: 'row',

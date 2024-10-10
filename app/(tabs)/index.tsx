@@ -1,8 +1,7 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedView } from "@/components/ThemedView";
 import { useNavigation } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import { useCallback, useState } from "react";
 import { getUserData, iUserData } from "@/services/user/getUserData";
 import { RootStackParamList } from "../_layout";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -19,7 +18,7 @@ export default function HomeScreen() {
   const fetchUserData = async () => {
     try {
       const user = await getUserData();
-      console.log("User Data:", user);
+      // console.log("User Data:", user);
       setUserData(user);
     } catch (error: any) {
       navigation.navigate("login");

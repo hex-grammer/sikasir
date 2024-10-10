@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from './_layout';
 import { ThemedView } from '@/components/ThemedView';
@@ -148,63 +148,6 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 10,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  cartItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 8,
-  },
-  cartItemText: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  itemDetails: {
-    fontSize: 14,
-    color: '#555',
-  },
-  quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  quantityButton: {
-    backgroundColor: '#ddd',
-    padding: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
-  },
-  quantityButtonText: {
-    fontSize: 18,
-  },
-  quantityInput: {
-    width: 40,
-    textAlign: 'center',
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-  },
-  removeButton: {
-    backgroundColor: '#ff6347',
-    padding: 10,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  removeButtonText: {
-    color: 'white',
-  },
-  totalText: {
-    fontSize: 22,
-    fontWeight: 'bold',
-  },
   emptyCartText: {
     flex:1,
     textAlign: 'center',
@@ -243,10 +186,5 @@ const styles = StyleSheet.create({
   checkoutButton: {
     flex:0,
     marginTop: 20,
-  },
-  checkoutButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
