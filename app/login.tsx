@@ -4,6 +4,7 @@ import { login } from '../services/authService'; // Import the login function
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from './_layout'; // Import your navigation type
+import CustomButton from '@/components/CustomButton';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'login'>;
 
@@ -40,7 +41,7 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
       />
-      <Button title="Login" onPress={handleLogin} />
+      <CustomButton title="Login" onPress={handleLogin} style={{flex:0}} />
     </View>
   );
 }
