@@ -3,6 +3,7 @@ import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard } from 
 import { Picker } from "@react-native-picker/picker";
 import CreateCustomerModal from "./CreateCustomerModal";
 import { Entypo } from "@expo/vector-icons";
+import { iCreateCustomerModal } from "@/services/customer/createCustomer";
 
 export interface iSelectCustomer {
   value: string;
@@ -11,7 +12,7 @@ export interface iSelectCustomer {
 
 interface SelectCustomerProps {
   customers: iSelectCustomer[];
-  onCreateCustomer: (newCustomer: string) => void;
+  onCreateCustomer: (newCustomer: iCreateCustomerModal) => void;
   selectedCustomer: string | null;
   onCustomerSelect: (customer: string) => void;
   searchQuery: string;
@@ -29,7 +30,6 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
   const [isPickerVisible, setPickerVisible] = useState(false);
   const [isCreateModalVisible, setCreateModalVisible] = useState(false);
   const [isClearIconVisible, setClearIconVisible] = useState(false);
-  const [newCustomerName, setNewCustomerName] = useState("");
   const pickerRef = useRef<any>(null);
 
   const handleSelectCustomer = (value: string) => {
@@ -39,14 +39,6 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
       onCustomerSelect(value);
       setPickerVisible(false);
     }
-  };
-
-  const handleCreateCustomer = () => {
-    const trimmedCustomerName = newCustomerName.trim();
-    if (!trimmedCustomerName) return;
-    onCreateCustomer(trimmedCustomerName);
-    setNewCustomerName("");
-    setCreateModalVisible(false);
   };
 
   const handleFocus = () => {
@@ -113,7 +105,7 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
 
         <CreateCustomerModal
           isVisible={isCreateModalVisible}
-          onCreateCustomer={handleCreateCustomer}
+          onCreateCustomer={onCreateCustomer}
           onClose={() => setCreateModalVisible(false)}
         />
       </View>

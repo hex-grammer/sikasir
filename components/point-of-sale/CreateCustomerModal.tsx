@@ -3,16 +3,7 @@ import {StyleSheet,View,Text,Pressable,Modal,TextInput,TouchableWithoutFeedback,
 import * as ImagePicker from 'expo-image-picker';
 import CustomButton from '../CustomButton';
 import { ThemedText } from '../ThemedText';
-
-export interface iCreateCustomerModal {
-  id_outlet: string;
-  nama_customer: string;
-  ktp: string;
-  alamat: string;
-  fotoKtpUri?: string;
-  email?: string;
-  telpon?: string;
-}
+import { iCreateCustomerModal } from '@/services/customer/createCustomer';
 
 interface CreateCustomerModalProps {
   isVisible: boolean;

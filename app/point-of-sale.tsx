@@ -1,12 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  StyleSheet,
-  FlatList,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from "react-native";
+import {StyleSheet,FlatList,TextInput,KeyboardAvoidingView,Platform,Alert,} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { HomeScreenNavigationProp } from "./_layout";
 import ItemCard, { iItemCart } from "@/components/point-of-sale/ItemCard";
@@ -20,6 +13,7 @@ import { searchCustomer } from "@/services/pos/searchCustomer";
 import { Entypo } from "@expo/vector-icons";
 import { debounce } from "@/utils/debounce";
 import { ThemedText } from "@/components/ThemedText";
+import { createCustomer, iCreateCustomerModal } from "@/services/customer/createCustomer";
 
 export default function PointOfSaleScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -68,7 +62,7 @@ export default function PointOfSaleScreen() {
       const items = await getPOSItems(posProfile, searchItemQuery);
       const processedItems = items.map((item: iItemCart) => ({
         ...item,
-        discount: item.discount || 0, // Ensure discount field
+        discount: item.discount || 0,
       }));
       setItemList(processedItems);
     } catch (error) {
@@ -87,9 +81,15 @@ export default function PointOfSaleScreen() {
     }
   }, []);
 
-  const handleCreateCustomer = (newCustomer: string) => {
-    console.log("Create New Customer:", newCustomer);
-    Alert.alert("Create Customer", `Nama: ${newCustomer}`);
+  const handleCreateCustomer = async (newCustomer: iCreateCustomerModal) => {
+    try {
+      await createCustomer(newCustomer);
+      setSelectedCustomer(newCustomer.nama_customer);
+      Alert.alert("Success", `Data customer ${newCustomer.nama_customer} berhasil dibuat.`);
+    } catch (error) {
+      console.error("Error while creating customer:", error);
+      Alert.alert("Error", "Data customer gagal dibuat.");
+    }
   };
 
   const handleSearchCustomerChange = (text: string) => {
