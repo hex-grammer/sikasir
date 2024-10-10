@@ -4,21 +4,14 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import CustomButton from '@/components/CustomButton';
-import axios from 'axios';
 import { useNavigation } from 'expo-router';
 import { HomeScreenNavigationProp } from '../_layout';
+import { logout } from '@/services/authService';
 
-export default function TabTwoScreen() {
+export default function Settings() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const handleLogout = async() => {
-    // await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/method/logout`)
-    await axios.get(`http://157.245.58.91:8080/api/method/logout`)
-      .then(_ => {
-        navigation.navigate('login');
-      })
-      .catch((error) => {
-        alert(error);
-      });
+    await logout().then(() => navigation.navigate('login'));
   };
 
   return (
@@ -29,7 +22,6 @@ export default function TabTwoScreen() {
         <ThemedText type="title">Settings</ThemedText>
       </ThemedView>
       <ThemedText>This app includes example code to help you get started.</ThemedText>
-      {/* logout button */}
       <CustomButton title="Logout" onPress={handleLogout} />
     </ParallaxScrollView>
   );

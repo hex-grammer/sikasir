@@ -2,8 +2,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { getClusterById } from "../cluster/getClusterById";
 
-// const FRAPPE_BASE_URL = 'http://157.245.58.91:8080'; // Replace with your Frappe instance
-
 export interface iUserData {
     email: string;
     full_name: string;
@@ -46,6 +44,6 @@ export const getUserData = async (): Promise<iUserData> => {
         };
     } catch (error) {
         console.error('Failed to get user data:', error);
-        throw error; // Rethrow the error to be caught in the HomeScreen
+        throw error; 
     }
 };
