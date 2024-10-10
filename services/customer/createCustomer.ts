@@ -5,21 +5,30 @@ export interface iCreateCustomerModal {
     nama_customer: string;
     ktp: string;
     alamat: string;
-    fotoKtpUri?: string;
+    fotoKtpUri: string;
     email?: string;
     telpon?: string;
 }
 
-export const createCustomer = async (customerData: iCreateCustomerModal) => {
+export const createCustomer = async (userId: string, customerData: iCreateCustomerModal) => {
   try {
     const payload = {
       doc: {
+        owner: userId,
+        customer_name: customerData.nama_customer,
+        custom_ktp: customerData.ktp,
+        custom_alamat: customerData.alamat,
+        custom_id_outlet: customerData.id_outlet,
+        image: customerData.fotoKtpUri, 
+        email_id: customerData.email,
+        mobile_no: customerData.telpon,
+        email_address: customerData.email,
+        mobile_number: customerData.telpon,
         docstatus: 0,
         doctype: "Customer",
-        name: `new-customer-${Math.random().toString(36).substring(2, 12)}`, // Generate a unique name
+        name: `new-customer-${Math.random().toString(36).substring(2, 12)}`,
         __islocal: 1,
         __unsaved: 1,
-        owner: "cicie080895@gmail.com", // Replace with the correct owner (can be dynamic)
         naming_series: "CUST-.YYYY.-",
         customer_type: "Individual",
         is_internal_customer: 0,
@@ -34,14 +43,6 @@ export const createCustomer = async (customerData: iCreateCustomerModal) => {
         disabled: 0,
         portal_users: [],
         __run_link_triggers: 1,
-        customer_name: customerData.nama_customer,
-        custom_ktp: customerData.ktp,
-        custom_alamat: customerData.alamat,
-        custom_id_outlet: customerData.id_outlet,
-        email_id: customerData.email,
-        mobile_no: customerData.telpon,
-        email_address: customerData.email,
-        mobile_number: customerData.telpon,
       },
     };
 

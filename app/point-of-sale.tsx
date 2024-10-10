@@ -14,6 +14,7 @@ import { Entypo } from "@expo/vector-icons";
 import { debounce } from "@/utils/debounce";
 import { ThemedText } from "@/components/ThemedText";
 import { createCustomer, iCreateCustomerModal } from "@/services/customer/createCustomer";
+import { uploadFile } from "@/services/uploadFile";
 
 export default function PointOfSaleScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -83,8 +84,15 @@ export default function PointOfSaleScreen() {
 
   const handleCreateCustomer = async (newCustomer: iCreateCustomerModal) => {
     try {
-      await createCustomer(newCustomer);
+      // console.log('Uploading foto KTP...');
+      const fileUploadResponse = await uploadFile(newCustomer.fotoKtpUri);
+      const fileUrl = fileUploadResponse.file_url;
+      const customerPayload: iCreateCustomerModal = {...newCustomer,fotoKtpUri: fileUrl};
+      
+      await createCustomer(userData?.email || 'Administrator',customerPayload);
       setSelectedCustomer(newCustomer.nama_customer);
+      setSearchCustomerQuery(newCustomer.nama_customer);
+
       Alert.alert("Success", `Data customer ${newCustomer.nama_customer} berhasil dibuat.`);
     } catch (error) {
       console.error("Error while creating customer:", error);
