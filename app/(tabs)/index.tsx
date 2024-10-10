@@ -1,26 +1,28 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedView } from "@/components/ThemedView";
 import { useNavigation } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Alert } from "react-native";
 import { getUserData, iUserData } from "@/services/user/getUserData";
 import { RootStackParamList } from "../_layout";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import HeroSection from "@/components/(tabs)/index/HeroSection";
 import HistoryList from "@/components/(tabs)/index/HistoryList";
+import { useFocusEffect } from "expo-router";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
-  const [userData, setUserData] = useState<iUserData | null>(null);
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const [userData, setUserData] = useState<iUserData | null>(null);
 
   const fetchUserData = async () => {
     try {
       const user = await getUserData();
+      // console.log("User Data:", user);
       setUserData(user);
     } catch (error: any) {
-      if (error.message === "No session ID found" || error.message === "Forbidden access") {
+      if (error.message === "No session ID found") {
         Alert.alert("Session expired", "Redirecting to login...");
         navigation.navigate("login");
       } else {
@@ -29,9 +31,12 @@ export default function HomeScreen() {
     }
   };
 
-  useEffect(() => {
-    fetchUserData();
-  }, [navigation]);
+  useFocusEffect(
+    useCallback(() => {
+      const unsubscribe = fetchUserData;
+      return () => unsubscribe();
+    },[userData])
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
