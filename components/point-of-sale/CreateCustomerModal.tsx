@@ -4,6 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import CustomButton from '../CustomButton';
 import { ThemedText } from '../ThemedText';
 import { iCreateCustomerModal } from '@/services/customer/createCustomer';
+import { Feather } from '@expo/vector-icons';
 
 interface CreateCustomerModalProps {
   isVisible: boolean;
@@ -20,18 +21,20 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
   const [namaCustomer, setNamaCustomer] = useState<string>('');
   const [ktp, setKtp] = useState<string>('');
   const [alamat, setAlamat] = useState<string>('');
-  const [fotoKtpUri, setFotoKtpUri] = useState<string | undefined>();
+  const [fotoKtpUri, setFotoKtpUri] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [telpon, setTelpon] = useState<string>('');
 
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  const captureImage = async () => {
+    // Request camera permission
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!permissionResult.granted) {
-      Alert.alert('Permission Denied', 'You need to grant permission to upload an image.');
+      Alert.alert('Permission Denied', 'You need to grant permission to use the camera.');
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
+    // Launch camera to capture image
+    const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
@@ -64,7 +67,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
     setNamaCustomer('');
     setKtp('');
     setAlamat('');
-    setFotoKtpUri(undefined);
+    setFotoKtpUri('');
     setEmail('');
     setTelpon('');
     onClose();
@@ -126,11 +129,13 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
                 textAlignVertical='top'
               />
             </View>
-  
+
             {/* Foto KTP */}
             <View style={styles.inputContainer}>
               <ThemedText>Foto KTP</ThemedText>
-              <CustomButton title="Upload Foto KTP" onPress={pickImage}/>
+              <Pressable style={styles.uploadButton} onPress={captureImage}>
+                <ThemedText style={styles.uploadButtonText}><Feather name="camera" size={16} color="white" /> Foto KTP</ThemedText>
+              </Pressable>
               {fotoKtpUri && (
                 <Image source={{ uri: fotoKtpUri }} style={styles.imagePreview} />
               )}
@@ -211,7 +216,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     padding: 10,
     borderRadius: 5,
-    marginBottom: 16,
   },
   uploadButtonText: {
     color: 'white',
@@ -220,7 +224,7 @@ const styles = StyleSheet.create({
   imagePreview: {
     width: 100,
     height: 100,
-    marginTop: 4,
+    marginTop:8,
     marginBottom: 4,
     alignSelf: 'center',
   },

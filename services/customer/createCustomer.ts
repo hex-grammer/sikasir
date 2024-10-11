@@ -19,7 +19,7 @@ export const createCustomer = async (userId: string, customerData: iCreateCustom
         custom_ktp: customerData.ktp,
         custom_alamat: customerData.alamat,
         custom_id_outlet: customerData.id_outlet,
-        image: customerData.fotoKtpUri, 
+        foto_ktp: customerData.fotoKtpUri, 
         email_id: customerData.email,
         mobile_no: customerData.telpon,
         email_address: customerData.email,
