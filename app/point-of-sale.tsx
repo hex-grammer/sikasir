@@ -8,37 +8,70 @@ import { ThemedView } from "@/components/ThemedView";
 import { CartButton } from "@/components/point-of-sale/CartButton";
 import { getPOSItems } from "@/services/pos/getPOSItems";
 import { getUserData, iUserData } from "@/services/user/getUserData";
-import { checkOpeningEntry } from "@/services/pos/checkOpeningEntry";
+import { getOpeningEntry } from "@/services/pos/getOpeningEntry";
 import { searchCustomer } from "@/services/pos/searchCustomer";
 import { Entypo } from "@expo/vector-icons";
 import { debounce } from "@/utils/debounce";
 import { ThemedText } from "@/components/ThemedText";
 import { createCustomer, iCreateCustomerModal } from "@/services/customer/createCustomer";
 import { uploadFile } from "@/services/uploadFile";
+import InsertSerialNumber, { iSerialNumber } from "@/components/point-of-sale/InsertSerialNumber";
+import { iPOSInvoice } from "@/interfaces/posInvoice/iPOSInvoice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import createPOSInvoice from "@/services/pos/createPOSInvoice";
+import { getPOSProfileDetails } from "@/services/pos/getPOSProfileDetails";
+import { iPOSProfile } from "@/interfaces/posProfile/iPOSProfile";
+import { createSNBatch } from "@/services/pos/createSNBatch";
+import updatePOSInvoice from "@/services/pos/updatePOSInvoice";
+
+const initSelectedItem: iItemCart = {
+  item_code: "",
+  item_name: "",
+  price_list_rate: 0,
+  actual_qty: 0,
+  description: "",
+  currency: "",
+  is_stock_item: false,
+  uom: "",
+  discount: 0,
+  batch_no: "",
+  item_image: "",
+  item_group: "",
+  quantity: 1,
+  serial_numbers: [],
+}
 
 export default function PointOfSaleScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [userData, setUserData] = useState<iUserData | null>(null);
   const [posProfile, setPosProfile] = useState<string>("");
+  const [posProfileDetail, setPosProfileDetail] = useState<iPOSProfile | null>(null);
   
   // Separate states for customers and items
   const [searchCustomerQuery, setSearchCustomerQuery] = useState<string>("");
   const [searchItemQuery, setSearchItemQuery] = useState<string>("");
   const [customerList, setCustomerList] = useState<iSelectCustomer[]>([]);
   const [itemList, setItemList] = useState<iItemCart[]>([]);
+  const [posInvoice, setPosInvoice] = useState<iPOSInvoice | undefined>(undefined);
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isClearIconVisible, setClearIconVisible] = useState(false);
+  const [cartQuantity, setCartQuantity] = useState<number>(0);
+  const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>([]);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<iItemCart>(initSelectedItem);
 
-  // Fetch user data
   const fetchUserData = useCallback(async () => {
     try {
       const result = await getUserData();
       setUserData(result);
 
-      const openingEntryResult = await checkOpeningEntry(result.email);
-      const posPro = openingEntryResult.message[0].pos_profile;
-      setPosProfile(posPro);
+      const { message } = await getOpeningEntry(result.email);
+      const data =  await getPOSProfileDetails(message[0].pos_profile);
+
+      setPosProfileDetail(data);
+      setPosProfile(message[0].pos_profile);
     } catch (error: any) {
+      console.log(error);
       switch (error.message) {
         case "No session ID found":
           Alert.alert("Session expired", "Redirecting to login...");
@@ -56,22 +89,16 @@ export default function PointOfSaleScreen() {
     }
   }, [navigation]);
 
-  // Fetch POS items based on user data and item query
   const fetchPOSItems = useCallback(async () => {
     if (!posProfile) return;
     try {
       const items = await getPOSItems(posProfile, searchItemQuery);
-      const processedItems = items.map((item: iItemCart) => ({
-        ...item,
-        discount: item.discount || 0,
-      }));
-      setItemList(processedItems);
+      setItemList(items.map((item:iItemCart) => ({ ...item, discount: item.discount || 0 })));
     } catch (error) {
       console.error("Error fetching POS items:", error);
     }
   }, [posProfile, searchItemQuery]);
 
-  // Fetch customers based on search query
   const fetchCustomers = useCallback(async (query: string) => {
     try {
       const customers = await searchCustomer(query);
@@ -104,32 +131,99 @@ export default function PointOfSaleScreen() {
     setSearchCustomerQuery(text);
   };
 
+  const handleSelectCustomer = async (customer: string) => {
+    await AsyncStorage.removeItem('posInvoice');
+
+    setSelectedCustomer(customer);
+    setPosInvoice(undefined);
+    setCartQuantity(0);
+  };
+
   const handleSearchItemChange = (text: string) => {
     setSearchItemQuery(text);
   };
 
-  // Fetch user data on mount
+  const handleSelectItem = (item:iItemCart) => {
+    if (!selectedCustomer) {
+      Alert.alert("Error", "Please select a customer first.");
+      return;
+    }
+
+    setModalVisible(true);
+    setSelectedItem(item)
+  };
+
+  const handleAddToCart = async (serials: iSerialNumber[]) => {
+    try {
+      if (!selectedCustomer || !posProfileDetail) {
+        return Alert.alert("Error", selectedCustomer ? "Failed to retrieve POS Profile details." : "Please select a customer first.");
+      }
+  
+      const storageInvoice = await AsyncStorage.getItem('posInvoice');
+      const posInvoice = storageInvoice ? JSON.parse(storageInvoice) : null;
+      let items = posInvoice?.items ? [...posInvoice.items] : [];
+  
+      const existingItemIndex = items.findIndex(item => item.item_code === selectedItem.item_code);
+      const serial_and_batch_bundle = await createSNBatch(serials, selectedItem, posInvoice);
+      if (!serial_and_batch_bundle) return;
+  
+      const updatedItem = {
+        item_code: selectedItem.item_code,
+        qty: selectedItem.quantity,
+        warehouse: posProfileDetail.warehouse,
+        serial_and_batch_bundle
+      };
+  
+      if (existingItemIndex !== -1) {
+        items[existingItemIndex] = { ...items[existingItemIndex], ...updatedItem };
+      } else {
+        items.push(updatedItem);
+      }
+  
+      const payload = {name: posInvoice?.name,items};
+      const updatedInvoice = posInvoice
+        ? await updatePOSInvoice(posInvoice.name, payload)
+        : await createPOSInvoice({
+            customer: selectedCustomer,
+            pos_profile: posProfile,
+            selling_price_list: posProfileDetail.selling_price_list,
+            set_warehouse: posProfileDetail.warehouse,
+            items,
+            payments: [{ mode_of_payment: posProfileDetail.payments[0].mode_of_payment }]
+          });
+  
+      alert(`${selectedItem.quantity} item ${selectedItem.item_code} berhasil ditambahkan ke keranjang`);
+      setPosInvoice(updatedInvoice);
+      setCartQuantity(updatedInvoice.total_qty);
+      await AsyncStorage.setItem('posInvoice', JSON.stringify(updatedInvoice));
+      handleCloseModal();
+    } catch (error) {
+      console.log('Error fetching POS Invoice:', error);
+      Alert.alert("Error", "Failed to create POS Invoice.");
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setSelectedItem(initSelectedItem);
+    setSerialNumbers([]);
+  };
+
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
 
-  // Fetch POS items when userData or search item query changes
   useEffect(() => {
     if (!userData || !posProfile) return;
     debounce(fetchPOSItems, 1000);
   }, [userData, posProfile, searchItemQuery, fetchPOSItems]);
 
-  // Fetch customers when search customer query changes
   useEffect(() => {
     debounce(() => fetchCustomers(searchCustomerQuery), 1000);
   }, [searchCustomerQuery, fetchCustomers]);
 
   useEffect(() => {
-    if (searchItemQuery) {
-      setClearIconVisible(true);
-    } else {
-      setClearIconVisible(false);
-    }
+    setClearIconVisible(!!searchItemQuery);
   }, [searchItemQuery]);
 
   return (
@@ -141,7 +235,7 @@ export default function PointOfSaleScreen() {
         customers={customerList}
         onCreateCustomer={handleCreateCustomer}
         selectedCustomer={selectedCustomer}
-        onCustomerSelect={setSelectedCustomer}
+        onCustomerSelect={handleSelectCustomer}
         searchQuery={searchCustomerQuery}
         onSearchInputChange={handleSearchCustomerChange}
       />
@@ -154,30 +248,54 @@ export default function PointOfSaleScreen() {
             style={styles.searchInput}
             placeholder="Search by item name or code"
           />
-          {isClearIconVisible && 
-            <Entypo name="circle-with-cross" size={24} color="black" style={styles.searchClearIcon}
-              onPress={() => {setSearchItemQuery(""); setClearIconVisible(false);}}
+          {isClearIconVisible && (
+            <Entypo
+              name="circle-with-cross"
+              size={24}
+              color="black"
+              style={styles.searchClearIcon}
+              onPress={() => {
+                setSearchItemQuery("");
+                setClearIconVisible(false);
+              }}
             />
-          }
+          )}
         </ThemedView>
-        <CartButton qty={68} onPress={() => navigation.navigate("cart")} />
+        <CartButton
+          qty={cartQuantity}
+          onPress={() => navigation.navigate("cart")}
+        />
       </ThemedView>
 
-      {
-        (itemList.length === 0 && searchItemQuery !== "") ? (
-          <ThemedView style={styles.emptyListContainer}>
-            <ThemedText>Item tidak ditemukan</ThemedText>
-          </ThemedView>
-        ) : (
-          <FlatList
-            data={itemList}
-            keyExtractor={(item) => item.item_code}
-            renderItem={({ item }: { item: iItemCart }) => <ItemCard item={item} />}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 120 }}
-          />
-        )
-      }
+      {itemList.length === 0 && searchItemQuery !== "" ? (
+        <ThemedView style={styles.emptyListContainer}>
+          <ThemedText>Item tidak ditemukan</ThemedText>
+        </ThemedView>
+      ) : (
+        <FlatList
+          data={itemList}
+          keyExtractor={(item) => item.item_code}
+          renderItem={({ item }: { item: iItemCart }) => (
+            <ItemCard
+              item={item}
+              isModalVisible={isModalVisible}
+              setItemList={setItemList}
+              setSelectedItem={handleSelectItem}
+            />
+          )}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        />
+      )}
+
+      <InsertSerialNumber
+        posInvoice={posInvoice}
+        selectedItem={selectedItem}
+        setSelectedItem={setSelectedItem}
+        isModalVisible={isModalVisible}
+        onSave={handleAddToCart}
+        onClose={handleCloseModal}
+      />
     </KeyboardAvoidingView>
   );
 }

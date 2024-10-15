@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, TextInput, StyleSheet } from 'react-native';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import InsertSerialNumber, { iSerialNumber } from './InsertSerialNumber';
 import { ThemedView } from '../ThemedView';
 import { ThemedText } from '../ThemedText';
+import { iSerialNumber } from './InsertSerialNumber';
 
 export interface iItemCart {
   item_code: string;    
@@ -14,60 +14,69 @@ export interface iItemCart {
   currency: string;            
   is_stock_item: boolean;     
   uom: string;                
+  discount: number;
   batch_no?: string | null;   
   item_image?: string | null; 
   item_group?: string;
-  discount: number;
+  quantity: number;
+  serial_numbers?: iSerialNumber[];
 }
 
-interface ItemCardProps {item: iItemCart}
+interface ItemCardProps {
+  item: iItemCart, 
+  isModalVisible: boolean, 
+  setItemList: React.Dispatch<React.SetStateAction<iItemCart[]>>,
+  setSelectedItem: (item:iItemCart)=>void
+}
 
-const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
-  const [quantity, setQuantity] = useState(1);
-  const [inputValue, setInputValue] = useState<string>('1');
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>([]);
+const ItemCard: React.FC<ItemCardProps> = ({ item, isModalVisible, setSelectedItem }) => {
+  const [quantity, setQuantity] = useState(item.quantity || 1);
+  const [qtyInput, setQtyInput] = useState<string>(`${quantity}`);
   const discountedPrice = item.price_list_rate - item.discount;
-
-  const handleAddToCart = (serials: iSerialNumber[]) => {
-    // console.log('Serial Numbers:', serials);
-    setModalVisible(false);
-    setQuantity(1);
-    setInputValue('1');
-  };
 
   const handleIncrease = () => {
     setQuantity(prev => (prev < item.actual_qty ? prev + 1 : prev));
-    setInputValue(String(quantity < item.actual_qty ? quantity + 1 : quantity));
+    setQtyInput(String(quantity < item.actual_qty ? quantity + 1 : quantity));
   };
   
   const handleDecrease = () => {
     setQuantity(prev => (prev > 1 ? prev - 1 : 1));
-    setInputValue(String(quantity > 1 ? quantity - 1 : 1));
+    setQtyInput(String(quantity > 1 ? quantity - 1 : 1));
   };
 
   const handleQuantityChange = (value: string) => {
     if (value === '' || (/^\d+$/.test(value) && parseInt(value, 10) <= item.actual_qty)) {
-      setInputValue(value);
+      setQtyInput(value);
     } else {
-      setInputValue(inputValue);
+      setQtyInput(qtyInput);
     }
   };
 
   const handleQuantityBlur = () => {
-    if (inputValue === '' || isNaN(parseInt(inputValue, 10))) {
+    if (qtyInput === '' || isNaN(parseInt(qtyInput, 10))) {
       setQuantity(1);
-      setInputValue('1');
+      setQtyInput('1');
     } else {
-      const parsedValue = parseInt(inputValue, 10);
+      const parsedValue = parseInt(qtyInput, 10);
       setQuantity(parsedValue);
-      setInputValue(String(parsedValue)); 
+      setQtyInput(String(parsedValue)); 
     }
   };
 
+  const handleCartButtonPress = () => {
+    setSelectedItem({ ...item, quantity: quantity });
+  };
+
+  // reset quantity if showSNModal is false
+  useEffect(() => {
+    if (!isModalVisible) {
+      setQuantity(1);
+      setQtyInput('1');
+    }
+  }, [isModalVisible]);
+
   return (
     <ThemedView style={styles.card}>
-      {/* Item Details */}
       <ThemedView style={styles.topRow}>
         {/* <ThemedText style={styles.itemGroup}>{item.item_group}</ThemedText> */}
         <ThemedText style={styles.itemGroup}>{item.item_code}</ThemedText>
@@ -98,7 +107,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
 
           <TextInput
             style={styles.quantityInput}
-            value={inputValue}
+            value={qtyInput}
             keyboardType="numeric"
             onChangeText={handleQuantityChange}
             onBlur={handleQuantityBlur}
@@ -110,10 +119,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
 
           <Pressable
             style={styles.addToCartButton}
-            onPress={() => {
-              setModalVisible(true);
-              setQuantity(parseInt(inputValue, 10));
-            }}
+            onPress={handleCartButtonPress}
           >
             <ThemedText style={styles.addToCartButtonText}>
               <FontAwesome6 name="cart-plus" size={18} color="black" />
@@ -121,22 +127,11 @@ const ItemCard: React.FC<ItemCardProps> = ({ item }) => {
           </Pressable>
         </ThemedView>
       </ThemedView>
-
-      <InsertSerialNumber
-        quantity={quantity}
-        itemCode={item.item_code}
-        isModalVisible={isModalVisible}
-        initialSerialNumbers={serialNumbers}
-        onSave={handleAddToCart}
-        onClose={() => setModalVisible(false)}
-        setQuantity={setQuantity} // Pass quantity updater to InsertSerialNumber
-      />
     </ThemedView>
   );
 };
 
 export default ItemCard;
-
 
 const styles = StyleSheet.create({
   card: {
@@ -160,7 +155,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#000',
-    // color: '#888',
   },
   stockChip: {
     backgroundColor: '#eee',
@@ -229,57 +223,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginLeft: 8,
     borderWidth: 1,
-    // borderColor: '#24a0ed',
   },
   addToCartButtonText: {
-    // color: '#fff',
     color:'black',
-    fontWeight: 'bold',
-  },
-  modalContent: {
-    width: '80%',
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  serialRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  serialInput: {
-    flex: 1,
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginLeft: 10,
-  },
-  modalButton: {
-    padding: 10,
-    backgroundColor: '#2196F3',
-    borderRadius: 5,
-    marginTop: 20,
-  },
-  cancelButton: {
-    backgroundColor: '#f44336', // Red for cancel
-  },
-  modalButtonText: {
-    color: 'white',
-    textAlign: 'center',
     fontWeight: 'bold',
   },
 });

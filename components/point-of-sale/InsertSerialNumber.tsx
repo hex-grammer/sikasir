@@ -1,39 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, Pressable, Alert, Modal, StyleSheet } from 'react-native';
 import { ThemedText } from '../ThemedText';
+import { iItemCart } from './ItemCard';
 import CustomButton from '../CustomButton';
+import { iPOSInvoice } from '@/interfaces/posInvoice/iPOSInvoice';
 
-export interface iSerialNumber {
-  id: string;
-  value: string;
-}
+export interface iSerialNumber {id: string;value: string;}
 
 interface InsertSerialNumberProps {
-  quantity: number;
-  itemCode: string;
-  initialSerialNumbers: iSerialNumber[];
+  selectedItem: iItemCart;
   isModalVisible: boolean;
+  setSelectedItem: React.Dispatch<React.SetStateAction<iItemCart>>;
   onSave: (serials: iSerialNumber[]) => void;
   onClose: () => void;
-  setQuantity: (newQuantity: number) => void;
+  posInvoice?: iPOSInvoice;
 }
 
-const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({quantity,itemCode,initialSerialNumbers,isModalVisible,onSave,onClose,setQuantity,}) => {
-  const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>(
-    initialSerialNumbers.length
-      ? initialSerialNumbers
-      : Array.from({ length: quantity }, (_, i) => ({ id: String(i), value: '' }))
-  );
+const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({selectedItem,setSelectedItem,isModalVisible,onClose,onSave, posInvoice}) => {
+  const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>(Array.from({ length: selectedItem.quantity }, (_, i) => ({ id: String(i), value: '' })));
   const [batchInput, setBatchInput] = useState<string>('');
 
+  // Sync serial number inputs with the quantity when quantity changes
   useEffect(() => {
-    // Sync serial number inputs with the quantity when quantity changes
-    if (quantity !== serialNumbers.length) {
-      setSerialNumbers(
-        Array.from({ length: quantity }, (_, i) => serialNumbers[i] || { id: String(i), value: '' })
-      );
-    }
-  }, [quantity]);
+    if (selectedItem.quantity === serialNumbers.length) return;
+
+    setSerialNumbers(
+      Array.from({ length: selectedItem.quantity }, (_, i) => serialNumbers[i] || { id: String(i), value: '' })
+    );
+  }, [selectedItem.quantity]);
 
   const handleSerialChange = (index: number, value: string) => {
     setSerialNumbers(prev => {
@@ -44,17 +38,22 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({quantity,itemCod
   };
 
   const handleRemoveSerial = (index: number) => {
+    if (serialNumbers.length === 1) return;
+
     setSerialNumbers(prev => prev.filter((_, i) => i !== index));
-    setQuantity(quantity - 1);
+    setSelectedItem(prev => ({ ...prev, quantity: prev.quantity - 1 }));
   };
 
   const handleAddSerial = () => {
-    setSerialNumbers(prev => [...prev, { id: `${prev.length}`, value: '' }]);
-    setQuantity(quantity + 1);
+    if (serialNumbers.length >= selectedItem.actual_qty) return;
+
+    const uniqueId = Date.now().toString();
+    setSerialNumbers(prev => [...prev, { id: `${prev.length} ${uniqueId}`, value: '' }]);
+    setSelectedItem(prev => ({ ...prev, quantity: prev.quantity + 1 }));
   };
 
   const handleBatchInput = () => {
-    const batchArray = batchInput.split(/\s+/).filter(Boolean);
+    const batchArray = batchInput.trim().split(/\s+/).filter(Boolean);
     let serialsToInsert: string[] = [];
 
     for (let entry of batchArray) {
@@ -95,30 +94,29 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({quantity,itemCod
     setBatchInput('');
   };
 
-  const handleSave = () => {
+  const handleClose = () => {
+    setSerialNumbers([{id: '0',value: ''}]);
+    setSelectedItem(prev => ({ ...prev, quantity: 1 }));
+    onClose();
+  };
+
+  const handleSave = async () => {
     if (serialNumbers.some(sn => sn.value.trim() === '')) {
       Alert.alert('Error', 'Please fill in all serial numbers.');
       return;
     }
-    setSerialNumbers([{
-      id: '0',
-      value: ''
-    }]);
     onSave(serialNumbers);
   };
-
-  useEffect(() => {
-    if (quantity !== serialNumbers.length) {
-      setQuantity(quantity);
-    }
-  }, [quantity]);
 
   return (
     <Modal visible={isModalVisible} animationType="slide" transparent={true}>
       <View style={styles.modalContainer}>
         <View style={styles.container}>
-          <ThemedText type='subtitle' style={styles.title}>Serial Number {itemCode}</ThemedText>
-          <ThemedText>Total Quantity: {quantity}</ThemedText>
+          <ThemedText type='subtitle' style={styles.title}>Serial Number {selectedItem.item_code}</ThemedText>
+          <View style={styles.stockQuantityContainer}>
+            <ThemedText>Total Quantity: {selectedItem.quantity}</ThemedText>
+            <ThemedText>Stock: {selectedItem.actual_qty} </ThemedText>
+          </View>
           <TextInput
             style={styles.batchInput}
             value={batchInput}
@@ -153,7 +151,7 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({quantity,itemCod
 
           {/* Save and Close Buttons */}
           <View style={styles.buttonsContainer}>
-            <CustomButton title="Close" onPress={onClose} type='outline'/>
+            <CustomButton title="Close" onPress={handleClose} type='outline'/>
             <CustomButton title="Add to cart" onPress={handleSave}/>
           </View>
         </View>
@@ -169,7 +167,6 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    // paddingVertical: 20,
     height: '100%',
   },
   container: {
@@ -179,6 +176,10 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 16,
+  },
+  stockQuantityContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   batchInput: {
     borderColor: '#ddd',
@@ -191,11 +192,6 @@ const styles = StyleSheet.create({
   batchButton: {
     flex:0,
     marginBottom: 16,
-  },
-  batchButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
   },
   serialInput: {
     borderColor: '#ddd',
@@ -210,30 +206,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 16,
     gap: 12,
-  },
-  saveButton: {
-    backgroundColor: '#000',
-    padding: 12,
-    borderRadius: 4,
-    flex:1,
-  },
-  saveButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: 'black',
-    padding: 12,
-    borderRadius: 4,
-    flex:1,
-  },
-  closeButtonText: {
-    color: 'black',
-    textAlign: 'center',
-    fontWeight: 'bold',
   },
   serialRow: {
     flexDirection: 'row',
@@ -252,16 +224,5 @@ const styles = StyleSheet.create({
   },
   removeButtonText: {
     color: '#aaa',
-  },
-  addSerialButton: {
-    borderWidth: 1,
-    borderColor: 'black',
-    borderRadius: 5,
-    padding: 8,
-    alignItems: 'center',
-  },
-  addSerialButtonText: {
-    color: '#000',
-    fontWeight: 'bold',
   },
 });

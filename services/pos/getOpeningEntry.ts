@@ -1,4 +1,4 @@
-export const checkOpeningEntry = async (email?: string) => {
+export const getOpeningEntry = async (email?: string) => {
   try {
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_API_URL}/api/method/erpnext.selling.page.point_of_sale.point_of_sale.check_opening_entry`,
