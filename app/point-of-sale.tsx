@@ -215,14 +215,14 @@ export default function PointOfSaleScreen() {
 
   const resetPOSInvoice = async () => {
     const data = await AsyncStorage.getItem('posInvoice');
-    if (data){
-      const parsedData = await JSON.parse(data);
-      // console.log('Parsed Data:', parsedData);
-      
-      setSelectedCustomer(parsedData.customer);
-      setPosInvoice(parsedData);
-      setCartQuantity(parsedData.total_qty);
-    }    
+    if (!data) return setCartQuantity(0)
+
+    const parsedData = await JSON.parse(data);
+    // console.log('Parsed Data:', parsedData);
+    
+    setSelectedCustomer(parsedData.customer);
+    setPosInvoice(parsedData);
+    setCartQuantity(parsedData.total_qty || 0);
   };
 
   useFocusEffect(
