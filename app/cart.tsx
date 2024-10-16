@@ -60,6 +60,8 @@ export default function CartScreen() {
   };
 
   const handleCheckout = () => {
+    if(!posInvoice) return Alert.alert('Oops!','Keranjang masih kosong');
+
     Alert.alert(
       'Pembayaran',
       `Total yang harus dibayar: Rp ${posInvoice?.grand_total.toLocaleString()}`,

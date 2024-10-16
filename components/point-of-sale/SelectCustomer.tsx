@@ -43,26 +43,28 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
 
   const handleFocus = () => {
     setPickerVisible(true);
-    searchQuery !== "" && setClearIconVisible(true);
+    (!selectedCustomer && !searchQuery) ? setClearIconVisible(false) : setClearIconVisible(true);
   };
 
   const handleRemoveCustomer = () => {
-    Alert.alert(
-      'Anda yakin?',
-      'Mengubah customer akan menghapus data di keranjang anda.',
+    const removeCustomer = () => {
+      onCustomerSelect('');
+      onSearchInputChange("");
+      setClearIconVisible(false);
+    };
+
+    selectedCustomer ? Alert.alert(
+      'Hapus Customer?',
+      'Tindakan ini akan menghapus data di keranjang anda.',
       [
         { text: 'Batal', style: 'cancel' },
         {
           text: 'Ya',
           style: 'destructive',
-          onPress: () => {
-            onSearchInputChange("");
-            onCustomerSelect('');
-            setClearIconVisible(false);
-          },
+          onPress: removeCustomer,
         },
       ]
-    );
+    ) : onSearchInputChange(""); 
   };
   
   const handleBlur = () => {
@@ -96,11 +98,15 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
             onFocus={handleFocus}
             onBlur={handleBlur}
           />
-          {isClearIconVisible && 
-            <Entypo name="circle-with-cross" size={24} color="black" style={styles.searchClearIcon}
+          {isClearIconVisible && (
+            <Entypo
+              name="circle-with-cross"
+              size={24}
+              color="black"
+              style={styles.searchClearIcon}
               onPress={handleRemoveCustomer}
             />
-          }
+          )}
         </View>
 
         {isPickerVisible && (
@@ -113,9 +119,16 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
               mode="dropdown"
             >
               {customers.map((customer) => (
-                <Picker.Item key={customer.value} label={customer.value} value={customer.value} />
+                <Picker.Item
+                  key={customer.value}
+                  label={customer.value}
+                  value={customer.value}
+                />
               ))}
-              <Picker.Item label="+ Create New Customer" value="create_new_customer" />
+              <Picker.Item
+                label="+ Create New Customer"
+                value="create_new_customer"
+              />
             </Picker>
           </View>
         )}

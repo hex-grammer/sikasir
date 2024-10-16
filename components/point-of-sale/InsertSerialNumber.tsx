@@ -102,7 +102,7 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({selectedItem,set
 
   const handleSave = async () => {
     if (serialNumbers.some(sn => sn.value.trim() === '')) {
-      Alert.alert('Error', 'Please fill in all serial numbers.');
+      Alert.alert('Oops!', 'Silahkan lengkapi data serial number terlebih dahulu.');
       return;
     }
     

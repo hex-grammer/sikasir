@@ -48,7 +48,7 @@ const CreateCustomerModal: React.FC<CreateCustomerModalProps> = ({
 
   const handleCreateCustomer = () => {
     if (!idOutlet || !namaCustomer || !ktp || !alamat) {
-      Alert.alert('Error', 'Please fill in all required fields.');
+      Alert.alert('Oops!', 'Silahkan lengkapi data customer.');
       return;
     }
 

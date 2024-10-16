@@ -145,7 +145,7 @@ export default function PointOfSaleScreen() {
 
   const handleSelectItem = (item:iItemCart) => {
     if (!selectedCustomer) {
-      Alert.alert("Error", "Please select a customer first.");
+      Alert.alert("Oops!", "Silahkan pilih customer terlebih dahulu.");
       return;
     }
 
