@@ -23,6 +23,7 @@ import { getPOSProfileDetails } from "@/services/pos/getPOSProfileDetails";
 import { iPOSProfile } from "@/interfaces/posProfile/iPOSProfile";
 import { createSNBatch } from "@/services/pos/createSNBatch";
 import updatePOSInvoice from "@/services/pos/updatePOSInvoice";
+import { useFocusEffect } from "expo-router";
 
 const initSelectedItem: iItemCart = {
   item_code: "",
@@ -56,7 +57,6 @@ export default function PointOfSaleScreen() {
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const [isClearIconVisible, setClearIconVisible] = useState(false);
   const [cartQuantity, setCartQuantity] = useState<number>(0);
-  const [serialNumbers, setSerialNumbers] = useState<iSerialNumber[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<iItemCart>(initSelectedItem);
 
@@ -153,10 +153,11 @@ export default function PointOfSaleScreen() {
     setSelectedItem(item)
   };
 
-  const handleAddToCart = async (serials: iSerialNumber[]) => {
+  const handleAddToCart = async (serials: iSerialNumber[]):Promise<Boolean> => {
     try {
       if (!selectedCustomer || !posProfileDetail) {
-        return Alert.alert("Error", selectedCustomer ? "Failed to retrieve POS Profile details." : "Please select a customer first.");
+        Alert.alert("Error", selectedCustomer ? "Failed to retrieve POS Profile details." : "Please select a customer first.");
+        return false;
       }
   
       const storageInvoice = await AsyncStorage.getItem('posInvoice');
@@ -165,7 +166,7 @@ export default function PointOfSaleScreen() {
   
       const existingItemIndex = items.findIndex(item => item.item_code === selectedItem.item_code);
       const serial_and_batch_bundle = await createSNBatch(serials, selectedItem, posInvoice);
-      if (!serial_and_batch_bundle) return;
+      if (!serial_and_batch_bundle) return false;
   
       const updatedItem = {
         item_code: selectedItem.item_code,
@@ -197,20 +198,20 @@ export default function PointOfSaleScreen() {
       alert(`${selectedItem.quantity} item ${selectedItem.item_code} berhasil ditambahkan ke keranjang`);
       setPosInvoice(updatedInvoice);
       setCartQuantity(updatedInvoice.total_qty);
-      await AsyncStorage.setItem('posInvoice', JSON.stringify(updatedInvoice));
       handleCloseModal();
+      await AsyncStorage.setItem('posInvoice', JSON.stringify(updatedInvoice));
+      return true;
     } catch (error) {
       console.log('Error fetching POS Invoice:', error);
       Alert.alert("Error", "Failed to create POS Invoice.");
+      return false;
     }
   };
 
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedItem(initSelectedItem);
-    setSerialNumbers([]);
   };
-
 
   const resetPOSInvoice = async () => {
     const data = await AsyncStorage.getItem('posInvoice');
@@ -224,9 +225,11 @@ export default function PointOfSaleScreen() {
     }    
   };
 
-  useEffect(() => {
-    resetPOSInvoice();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      resetPOSInvoice();
+    }, [])
+  );
   
   useEffect(() => {
     fetchUserData();

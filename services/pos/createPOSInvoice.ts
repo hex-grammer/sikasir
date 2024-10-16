@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export interface iPOSInvoiceItem {
   item_code: string;
   qty: number;
-  warehouse: string;
+  warehouse?: string;
   serial_no?: string;
   serial_and_batch_bundle?: string;
 }
@@ -20,6 +20,7 @@ export interface iCreatePOSInvoicePayload {
   set_warehouse: string;
   items: iPOSInvoiceItem[];
   payments: iPOSInvoicePayment[];
+  name?: string;
 }
 
 const API_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/resource/POS%20Invoice`;

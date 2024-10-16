@@ -11,7 +11,7 @@ interface InsertSerialNumberProps {
   selectedItem: iItemCart;
   isModalVisible: boolean;
   setSelectedItem: React.Dispatch<React.SetStateAction<iItemCart>>;
-  onSave: (serials: iSerialNumber[]) => void;
+  onSave: (serials: iSerialNumber[]) => Promise<Boolean>;
   onClose: () => void;
   posInvoice?: iPOSInvoice;
 }
@@ -105,7 +105,12 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({selectedItem,set
       Alert.alert('Error', 'Please fill in all serial numbers.');
       return;
     }
-    onSave(serialNumbers);
+    
+    const isSaved = await onSave(serialNumbers);
+    if (!isSaved) return;
+    
+    setSerialNumbers([{id: '0',value: ''}]);
+    setSelectedItem(prev => ({ ...prev, quantity: 1 }));
   };
 
   return (

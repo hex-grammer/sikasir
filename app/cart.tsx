@@ -7,6 +7,7 @@ import CartItem, { iCartItem } from '@/components/cart/CartItem';
 import CustomButton from '@/components/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { iPOSInvoice } from '@/interfaces/posInvoice/iPOSInvoice';
+import updatePOSInvoice from '@/services/pos/updatePOSInvoice';
 
 export default function CartScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -36,9 +37,22 @@ export default function CartScreen() {
         {
           text: 'Hapus',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
             const updatedItems = cartItems.filter(item => item.item_code !== itemCode);
+
+            if (!updatedItems.length) {
+              AsyncStorage.removeItem('posInvoice');
+              setPosInvoice(null);
+              setCartItems([]);
+              return;
+            }
+
+            const updatedInvoice = await updatePOSInvoice(posInvoice?.name || '', { name: posInvoice?.name, items: updatedItems})
+            
             setCartItems(updatedItems);
+            setPosInvoice(updatedInvoice);
+
+            await AsyncStorage.setItem('posInvoice', JSON.stringify(updatedInvoice));
           },
         },
       ]
@@ -65,7 +79,7 @@ export default function CartScreen() {
 
   useEffect(() => {
     getPOSInvoice();
-  }, [navigation]);
+  }, []);
 
 return (
   <ThemedView style={styles.container}>
