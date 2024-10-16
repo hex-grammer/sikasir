@@ -5,9 +5,9 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 export interface iCartItem {
   item_code: string;
   item_name: string;
-  price: number;
-  discount: number;
-  quantity: number;
+  price_list_rate: number;
+  discount_amount: number;
+  qty: number;
 }
 
 interface CartItemProps {
@@ -17,8 +17,8 @@ interface CartItemProps {
 
 const CartItem: React.FC<CartItemProps> = ({ item, onRemove }) => {
 
-  const discountedPrice = item.price - item.discount;
-  const subtotal = discountedPrice * item.quantity;
+  const discountedPrice = item.price_list_rate - item.discount_amount;
+  const subtotal = discountedPrice * item.qty;
 
   return (
     <View style={styles.cartItem}>
@@ -37,7 +37,7 @@ const CartItem: React.FC<CartItemProps> = ({ item, onRemove }) => {
         {/* Price x Quantity and Remove Button (Left-Bottom) */}
         <View style={styles.leftContainer}>
           <Text style={styles.priceQuantityText}>
-            Rp {discountedPrice.toLocaleString()} x {item.quantity}
+            Rp {discountedPrice.toLocaleString()} x {item.qty}
           </Text>
         </View>
 

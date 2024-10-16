@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Alert } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import CreateCustomerModal from "./CreateCustomerModal";
 import { Entypo } from "@expo/vector-icons";
@@ -45,6 +45,26 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
     setPickerVisible(true);
     searchQuery !== "" && setClearIconVisible(true);
   };
+
+  const handleRemoveCustomer = () => {
+    Alert.alert(
+      'Anda yakin?',
+      'Mengubah customer akan menghapus data di keranjang anda.',
+      [
+        { text: 'Batal', style: 'cancel' },
+        {
+          text: 'Ya',
+          style: 'destructive',
+          onPress: () => {
+            onSearchInputChange("");
+            onCustomerSelect('');
+            setClearIconVisible(false);
+          },
+        },
+      ]
+    );
+  };
+  
   const handleBlur = () => {
     setPickerVisible(false);
     setClearIconVisible(false);
@@ -78,10 +98,7 @@ export const SelectCustomer: React.FC<SelectCustomerProps> = ({
           />
           {isClearIconVisible && 
             <Entypo name="circle-with-cross" size={24} color="black" style={styles.searchClearIcon}
-              onPress={() => {
-                onSearchInputChange("");
-                onCustomerSelect('');
-              }}
+              onPress={handleRemoveCustomer}
             />
           }
         </View>

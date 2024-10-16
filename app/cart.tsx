@@ -1,68 +1,44 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { HomeScreenNavigationProp } from './_layout';
 import { ThemedView } from '@/components/ThemedView';
 import CartItem, { iCartItem } from '@/components/cart/CartItem';
 import CustomButton from '@/components/CustomButton';
-
-const CART_ITEMS: iCartItem[] = [
-  {
-    item_code: 'PKT408',
-    item_name: 'Voucher 1.5GB 3 Hari Zona 3',
-    price: 47000,
-    discount: 8000,
-    quantity: 2,
-  },
-  {
-    item_code: 'PKT409',
-    item_name: 'Voucher 3GB 5 Hari Zona 3',
-    price: 85000,
-    discount: 0,
-    quantity: 1,
-  },
-  {
-    item_code: 'PKT4010',
-    item_name: 'Voucher 3GB 5 Hari Zona 3',
-    price: 85000,
-    discount: 0,
-    quantity: 3,
-  },
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { iPOSInvoice } from '@/interfaces/posInvoice/iPOSInvoice';
 
 export default function CartScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const [cartItems, setCartItems] = useState<iCartItem[]>([]);
+  const [posInvoice, setPosInvoice] = useState<iPOSInvoice | null>(null);
 
-  const [cartItems, setCartItems] = useState<iCartItem[]>(CART_ITEMS);
-  const [totalAmount, setTotalAmount] = useState(calculateTotal(CART_ITEMS));
+  const getPOSInvoice = async () => {
+    try {
+      const data = await AsyncStorage.getItem('posInvoice');
+      const posInvoice: iPOSInvoice | null = data ? JSON.parse(data) : null;
 
-  function calculateTotal(items: iCartItem[]) {
-    return items.reduce(
-      (total, item) => total + (item.price - item.discount) * item.quantity,
-      0
-    );
-  }
-
-  const totalBeforeTax = calculateTotal(cartItems);
-  const discount = totalBeforeTax - totalAmount;
-  const taxAmount = totalAmount * 0.11;
+      if (posInvoice && posInvoice.items) {
+        setPosInvoice(posInvoice);
+        setCartItems(posInvoice.items);
+      }
+    } catch (error) {
+      console.error('Error fetching cart items:', error);
+    }
+  };
 
   const handleRemoveItem = (itemCode: string) => {
     Alert.alert(
       'Hapus Item?',
       `Anda yakin ingin menghapus item ${itemCode} dari keranjang?`,
       [
-        {
-          text: 'Batal',
-          style: 'cancel',
-        },
+        { text: 'Batal', style: 'cancel' },
         {
           text: 'Hapus',
           style: 'destructive',
           onPress: () => {
-            const updatedItems = cartItems.filter((item) => item.item_code !== itemCode);
+            const updatedItems = cartItems.filter(item => item.item_code !== itemCode);
             setCartItems(updatedItems);
-            setTotalAmount(calculateTotal(updatedItems));
           },
         },
       ]
@@ -72,24 +48,24 @@ export default function CartScreen() {
   const handleCheckout = () => {
     Alert.alert(
       'Pembayaran',
-      `Total yang harus dibayar: Rp ${totalAmount.toLocaleString()}`,
+      `Total yang harus dibayar: Rp ${posInvoice?.grand_total.toLocaleString()}`,
       [
-        {
-          text: 'Batal',
-          style: 'cancel',
-        },
+        { text: 'Batal', style: 'cancel' },
         {
           text: 'Bayar',
           style: 'destructive',
           onPress: () => {
             setCartItems([]);
-            setTotalAmount(0);
-            navigation.navigate('invoice');
+            navigation.navigate('invoice'); // Navigate to invoice screen
           },
         },
       ]
-    )
+    );
   };
+
+  useEffect(() => {
+    getPOSInvoice();
+  }, [navigation]);
 
 return (
   <ThemedView style={styles.container}>
@@ -114,25 +90,25 @@ return (
     <View style={styles.totalContainer}>
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>Total Before Tax</Text>
-        <Text style={styles.totalValue}>Rp {totalBeforeTax.toLocaleString()}</Text>
+        <Text style={styles.totalValue}>Rp {posInvoice?.net_total.toLocaleString() || 0}</Text>
       </View>
 
       {/* Discount */}
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>Discount</Text>
-        <Text style={styles.totalValue}>Rp {discount.toLocaleString()}</Text>
+        <Text style={styles.totalValue}>Rp {posInvoice?.discount_amount.toLocaleString() || 0}</Text>
       </View>
 
       {/* PPN 11% */}
       <View style={styles.totalRow}>
         <Text style={styles.totalLabel}>PPN 11%</Text>
-        <Text style={styles.totalValue}>Rp {taxAmount.toLocaleString()}</Text>
+        <Text style={styles.totalValue}>Rp {posInvoice?.total_taxes_and_charges.toLocaleString() || 0}</Text>
       </View>
 
       {/* Grand Total */}
       <View style={styles.totalRow}>
         <Text style={styles.grandTotalLabel}>Grand Total</Text>
-        <Text style={styles.grandTotalValue}>Rp {totalAmount.toLocaleString()}</Text>
+        <Text style={styles.grandTotalValue}>Rp {posInvoice?.grand_total.toLocaleString() || 0}</Text>
       </View>
     </View>
 

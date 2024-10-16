@@ -14,7 +14,7 @@ export interface iItemCart {
   currency: string;            
   is_stock_item: boolean;     
   uom: string;                
-  discount: number;
+  discount_amount: number;
   batch_no?: string | null;   
   item_image?: string | null; 
   item_group?: string;
@@ -32,7 +32,7 @@ interface ItemCardProps {
 const ItemCard: React.FC<ItemCardProps> = ({ item, isModalVisible, setSelectedItem }) => {
   const [quantity, setQuantity] = useState(item.quantity || 1);
   const [qtyInput, setQtyInput] = useState<string>(`${quantity}`);
-  const discountedPrice = item.price_list_rate - item.discount;
+  const discountedPrice = item.price_list_rate - item.discount_amount;
 
   const handleIncrease = () => {
     setQuantity(prev => (prev < item.actual_qty ? prev + 1 : prev));
@@ -93,7 +93,7 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, isModalVisible, setSelectedIt
       <ThemedView style={styles.bottomRow}>
         {/* Price Section */}
         <ThemedView style={styles.priceInfo}>
-          {item.discount > 0 && (
+          {item.discount_amount > 0 && (
             <ThemedText style={styles.originalPrice}>Rp {item.price_list_rate.toLocaleString()}</ThemedText>
           )}
           <ThemedText style={styles.discountedPrice}>Rp {discountedPrice.toLocaleString()}</ThemedText>

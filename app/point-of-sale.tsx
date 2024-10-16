@@ -33,7 +33,7 @@ const initSelectedItem: iItemCart = {
   currency: "",
   is_stock_item: false,
   uom: "",
-  discount: 0,
+  discount_amount: 0,
   batch_no: "",
   item_image: "",
   item_group: "",
@@ -93,7 +93,7 @@ export default function PointOfSaleScreen() {
     if (!posProfile) return;
     try {
       const items = await getPOSItems(posProfile, searchItemQuery);
-      setItemList(items.map((item:iItemCart) => ({ ...item, discount: item.discount || 0 })));
+      setItemList(items.map((item:iItemCart) => ({ ...item, discount_amount: item.discount_amount || 0 })));
     } catch (error) {
       console.error("Error fetching POS items:", error);
     }
@@ -169,9 +169,10 @@ export default function PointOfSaleScreen() {
   
       const updatedItem = {
         item_code: selectedItem.item_code,
+        item_group: selectedItem.item_group,
         qty: selectedItem.quantity,
         warehouse: posProfileDetail.warehouse,
-        serial_and_batch_bundle
+        serial_and_batch_bundle,
       };
   
       if (existingItemIndex !== -1) {
@@ -184,12 +185,13 @@ export default function PointOfSaleScreen() {
       const updatedInvoice = posInvoice
         ? await updatePOSInvoice(posInvoice.name, payload)
         : await createPOSInvoice({
+            taxes_and_charges: "Indonesia Tax - MMPP",
             customer: selectedCustomer,
             pos_profile: posProfile,
             selling_price_list: posProfileDetail.selling_price_list,
             set_warehouse: posProfileDetail.warehouse,
             items,
-            payments: [{ mode_of_payment: posProfileDetail.payments[0].mode_of_payment }]
+            payments: [{ mode_of_payment: posProfileDetail.payments[0].mode_of_payment }],
           });
   
       alert(`${selectedItem.quantity} item ${selectedItem.item_code} berhasil ditambahkan ke keranjang`);
@@ -209,6 +211,23 @@ export default function PointOfSaleScreen() {
     setSerialNumbers([]);
   };
 
+
+  const resetPOSInvoice = async () => {
+    const data = await AsyncStorage.getItem('posInvoice');
+    if (data){
+      const parsedData = await JSON.parse(data);
+      // console.log('Parsed Data:', parsedData);
+      
+      setSelectedCustomer(parsedData.customer);
+      setPosInvoice(parsedData);
+      setCartQuantity(parsedData.total_qty);
+    }    
+  };
+
+  useEffect(() => {
+    resetPOSInvoice();
+  }, []);
+  
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
