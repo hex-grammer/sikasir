@@ -24,6 +24,7 @@ import { iPOSProfile } from "@/interfaces/posProfile/iPOSProfile";
 import { createSNBatch } from "@/services/pos/createSNBatch";
 import updatePOSInvoice from "@/services/pos/updatePOSInvoice";
 import { useFocusEffect } from "expo-router";
+import { validateLink } from "@/services/validateLink";
 
 const initSelectedItem: iItemCart = {
   item_code: "",
@@ -161,7 +162,15 @@ export default function PointOfSaleScreen() {
       }
   
       const storageInvoice = await AsyncStorage.getItem('posInvoice');
-      const posInvoice = storageInvoice ? JSON.parse(storageInvoice) : null;
+      let posInvoice = storageInvoice ? JSON.parse(storageInvoice) : null;
+      const isValidPosInvoice = await validateLink('POS Invoice', posInvoice?.name || '')
+
+      if (!isValidPosInvoice) {
+        // remove AsyncStorage posInvocice
+        await AsyncStorage.removeItem('posInvoice');
+        posInvoice = null;
+      }
+  
       let items = posInvoice?.items ? [...posInvoice.items] : [];
   
       const existingItemIndex = items.findIndex(item => item.item_code === selectedItem.item_code);
