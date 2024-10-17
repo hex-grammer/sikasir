@@ -10,6 +10,7 @@ import { iPOSInvoice } from '@/interfaces/posInvoice/iPOSInvoice';
 import updatePOSInvoice from '@/services/pos/updatePOSInvoice';
 import { validateLink } from '@/services/validateLink';
 import submitPOSInvoice from '@/services/pos/submitPOSInvoice';
+import { router } from 'expo-router';
 
 export default function CartScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -79,7 +80,7 @@ export default function CartScreen() {
     await AsyncStorage.removeItem('posInvoice');
     setPosInvoice(null);
     setCartItems([]);
-    navigation.navigate('invoice');    
+    router.push(`/invoice/${posInvoice?.name}`);
   }
 
   const checkoutConfirm = () => {

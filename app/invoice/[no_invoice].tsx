@@ -1,89 +1,22 @@
-import { useNavigation } from 'expo-router';
-import React from 'react';
+import { useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ScrollView } from 'react-native';
-import { HomeScreenNavigationProp } from './_layout';
 import CustomButton from '@/components/CustomButton';
-
-// Sample data
-const CUSTOMER_INFO = {
-  customer_name: "John Doe",
-  nomor_invoice: "INV-2024001",
-  transaction_date: "03 Oct 2024",
-  kasir: "Jane Smith",
-  alamat: "123 Main Street",
-};
-
-const ITEMS = [
-    {
-      item_code: "PKT001",
-      item_name: "Voucher 5GB 7 Days",
-      price: 70000,
-      quantity: 1,
-    },
-    {
-      item_code: "PKT002",
-      item_name: "Voucher 10GB 14 Days",
-      price: 120000,
-      quantity: 2,
-    },
-    {
-      item_code: "PKT003",
-      item_name: "Voucher 20GB 30 Days",
-      price: 200000,
-      quantity: 1,
-    },
-    // {
-    //   item_code: "PKT004",
-    //   item_name: "Voucher 50GB 90 Days",
-    //   price: 450000,
-    //   quantity: 3,
-    // },
-    // {
-    //   item_code: "PKT005",
-    //   item_name: "Voucher 100GB 180 Days",
-    //   price: 800000,
-    //   quantity: 1,
-    // },
-    // {
-    //   item_code: "PKT006",
-    //   item_name: "Mobile Data 1GB 1 Day",
-    //   price: 15000,
-    //   quantity: 5,
-    // },
-    // {
-    //   item_code: "PKT007",
-    //   item_name: "Mobile Data 3GB 7 Days",
-    //   price: 45000,
-    //   quantity: 4,
-    // },
-    // {
-    //   item_code: "PKT008",
-    //   item_name: "Mobile Data 10GB 30 Days",
-    //   price: 100000,
-    //   quantity: 2,
-    // },
-    // {
-    //   item_code: "PKT009",
-    //   item_name: "Mobile Data 25GB 60 Days",
-    //   price: 250000,
-    //   quantity: 1,
-    // },
-    // {
-    //   item_code: "PKT010",
-    //   item_name: "Mobile Data Unlimited 30 Days",
-    //   price: 300000,
-    //   quantity: 1,
-    // },
-  ];  
-
-// Sample total calculations
-const totalBeforeTax = 180000;
-const discount = 8000;
-const PPN = totalBeforeTax * 0.11;
-const grandTotal = totalBeforeTax - discount + PPN;
+import { HomeScreenNavigationProp } from '../_layout';
+import { getPOSInvoiceDetails } from '@/services/pos/getPOSInvoice';
+import { iPOSInvoice } from '@/interfaces/posInvoice/iPOSInvoice';
+import { iPOSInvoiceItem } from '@/services/pos/createPOSInvoice'; 
 
 const InvoiceScreen = () => {
-    const navigation = useNavigation<HomeScreenNavigationProp>();
+  const { no_invoice } = useLocalSearchParams<{ no_invoice: string }>();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+
+  const [posInvoice, setPosInvoice] = useState<iPOSInvoice|null>(null)
+
+  const fetchPOSInvoice = async () => {
+    const res = await getPOSInvoiceDetails(no_invoice);
+    setPosInvoice(res);
+  }
 
   // Render customer info row
   const renderInfoRow = (label: string, value: string) => (
@@ -93,8 +26,8 @@ const InvoiceScreen = () => {
     </View>
   );
 
-// Render each item in the list
-const renderItem = ({ item }: { item: { item_code: string; item_name: string; price: number; quantity: number } }) => (
+  // Render each item in the list
+  const renderItem = ({ item }: { item: iPOSInvoiceItem }) => (
     <View style={styles.itemRow}>
       {/* Top: Item Code and Name */}
       <View><Text>{item.item_code} - {item.item_name}</Text></View>
@@ -102,31 +35,43 @@ const renderItem = ({ item }: { item: { item_code: string; item_name: string; pr
       {/* Bottom: Price x Quantity (Left) and Total (Right, Bold) */}
       <View style={styles.bottomRow}>
         <Text style={styles.itemDetails}>
-          Rp {item.price.toLocaleString()} x {item.quantity}
+          Rp {item.price_list_rate?.toLocaleString()} x {item.qty}
         </Text>
         <Text style={styles.itemTotalBold}>
-          Rp {(item.price * item.quantity).toLocaleString()}
+          Rp {(item?.price_list_rate || 0 * item.qty).toLocaleString()}
         </Text>
       </View>
     </View>
   );  
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPOSInvoice();
+    }, [])
+  );
+
+  if(!posInvoice) return (
+    <View>
+      <Text>Loading...</Text>
+    </View>
+  )
 
   return (
     <ScrollView style={{backgroundColor:'white'}}>
         <View style={styles.container}>
             {/* Customer Info Section */}
             <View style={styles.infoSection}>
-                {renderInfoRow("Customer Name", CUSTOMER_INFO.customer_name)}
-                {renderInfoRow("Nomor Invoice", CUSTOMER_INFO.nomor_invoice)}
-                {renderInfoRow("Transaction Date", CUSTOMER_INFO.transaction_date)}
-                {renderInfoRow("Kasir", CUSTOMER_INFO.kasir)}
-                {renderInfoRow("Alamat", CUSTOMER_INFO.alamat)}
+                {renderInfoRow("Customer Name", posInvoice.customer)}
+                {renderInfoRow("Nomor Invoice", posInvoice.custom_pos_invoice_number)}
+                {renderInfoRow("Transaction Date", posInvoice.posting_date)}
+                {renderInfoRow("Kasir", "PKY - DEWI SINTA (TESTING)")} 
+                {renderInfoRow("Alamat", "Jl. Ampera no.123 (TESTING)")}
             </View>
 
             {/* Item List Section */}
             <View style={styles.itemsSection}>
                 <FlatList
-                data={ITEMS}
+                data={posInvoice.items}
                 keyExtractor={(item) => item.item_code}
                 renderItem={renderItem}
                 showsVerticalScrollIndicator={false}
@@ -138,19 +83,19 @@ const renderItem = ({ item }: { item: { item_code: string; item_name: string; pr
             <View>
                 <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Total Before Tax</Text>
-                <Text style={styles.totalValue}>Rp {totalBeforeTax.toLocaleString()}</Text>
+                <Text style={styles.totalValue}>Rp {posInvoice.net_total.toLocaleString()}</Text>
                 </View>
                 <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Discount</Text>
-                <Text style={styles.totalValue}>Rp {discount.toLocaleString()}</Text>
+                <Text style={styles.totalValue}>Rp {posInvoice.discount_amount.toLocaleString()}</Text>
                 </View>
                 <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>PPN 11%</Text>
-                <Text style={styles.totalValue}>Rp {PPN.toLocaleString()}</Text>
+                <Text style={styles.totalValue}>Rp {posInvoice.total_taxes_and_charges.toLocaleString()}</Text>
                 </View>
                 <View style={styles.totalRow}>
                 <Text style={styles.totalLabel}>Grand Total</Text>
-                <Text style={styles.totalValue}>Rp {grandTotal.toLocaleString()}</Text>
+                <Text style={styles.totalValue}>Rp {posInvoice.grand_total.toLocaleString()}</Text>
                 </View>
             </View>
         </View>

@@ -53,7 +53,7 @@ export default function RootLayout() {
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="point-of-sale" options={{title: "Point of Sale", animation: 'slide_from_right'}} />
         <Stack.Screen name="cart" options={{title: "Keranjang", animation: 'slide_from_right'}} />
-        <Stack.Screen name="invoice" options={{title: "Invoice", animation: 'slide_from_bottom',headerBackVisible: false,}} />
+        <Stack.Screen name="invoice/[no_invoice]" options={{title: "Invoice", animation: 'slide_from_bottom',headerBackVisible: false,}} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </PaperProvider>
