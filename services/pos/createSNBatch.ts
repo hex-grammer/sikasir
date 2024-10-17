@@ -1,4 +1,5 @@
 // services/pos/createSNBatch.ts
+import { iPOSInvoice } from "@/interfaces/posInvoice/iPOSInvoice";
 import { Alert } from "react-native";
 
 interface iSNBatchEntry {
@@ -21,13 +22,13 @@ interface iSNBatchPayload {
 export async function createSNBatch(
   serialNumbers: { value: string }[],
   selectedItem: { item_code: string },
-  posInvoice: { set_warehouse?: string; name?: string } | undefined
+  posInvoice: iPOSInvoice | null
 ) {
   try {
     // Map serial numbers into entries
     const entries: iSNBatchEntry[] = serialNumbers.map((sn, i) => ({
       serial_no: sn.value,
-      warehouse: posInvoice?.set_warehouse,
+      warehouse: posInvoice?.items[0].warehouse,
       idx: i + 1,
       qty: -1,
     }));
@@ -35,7 +36,7 @@ export async function createSNBatch(
     // Prepare request payload
     const payload: iSNBatchPayload = {
       item_code: selectedItem.item_code,
-      warehouse: posInvoice?.set_warehouse,
+      warehouse: posInvoice?.items[0].warehouse,
       type_of_transaction: "Outward",
       total_qty: -entries.length,
       voucher_type: "POS Invoice",

@@ -162,7 +162,7 @@ export default function PointOfSaleScreen() {
       }
   
       const storageInvoice = await AsyncStorage.getItem('posInvoice');
-      let posInvoice = storageInvoice ? JSON.parse(storageInvoice) : null;
+      let posInvoice = storageInvoice ? await JSON.parse(storageInvoice) : null;
       const isValidPosInvoice = await validateLink('POS Invoice', posInvoice?.name || '')
 
       if (!isValidPosInvoice) {
@@ -173,6 +173,8 @@ export default function PointOfSaleScreen() {
   
       let items = posInvoice?.items ? [...posInvoice.items] : [];
   
+      // log pos invoice
+      // console.log('POS Invoice from point-of-sale:', posInvoice);
       const existingItemIndex = items.findIndex(item => item.item_code === selectedItem.item_code);
       const serial_and_batch_bundle = await createSNBatch(serials, selectedItem, posInvoice);
       if (!serial_and_batch_bundle) return false;

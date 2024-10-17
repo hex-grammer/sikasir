@@ -8,6 +8,8 @@ import CustomButton from '@/components/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { iPOSInvoice } from '@/interfaces/posInvoice/iPOSInvoice';
 import updatePOSInvoice from '@/services/pos/updatePOSInvoice';
+import { validateLink } from '@/services/validateLink';
+import submitPOSInvoice from '@/services/pos/submitPOSInvoice';
 
 export default function CartScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
@@ -59,7 +61,28 @@ export default function CartScreen() {
     );
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
+    const isValidPosInvoice = await validateLink('POS Invoice', posInvoice?.name || '')
+
+    if (!isValidPosInvoice) {
+      Alert.alert('Gagal', 'Data tidak valid.');
+      await AsyncStorage.removeItem('posInvoice');
+      return;
+    }
+
+    const isSaved =  await submitPOSInvoice(posInvoice?.name || '');
+
+    if (!isSaved) return Alert.alert('Gagal', 'Data gagal disimpan.');
+
+    Alert.alert('Berhasil', 'Data berhasil disimpan.');
+
+    await AsyncStorage.removeItem('posInvoice');
+    setPosInvoice(null);
+    setCartItems([]);
+    navigation.navigate('invoice');    
+  }
+
+  const checkoutConfirm = () => {
     if(!posInvoice) return Alert.alert('Oops!','Keranjang masih kosong');
 
     Alert.alert(
@@ -70,10 +93,7 @@ export default function CartScreen() {
         {
           text: 'Bayar',
           style: 'destructive',
-          onPress: () => {
-            setCartItems([]);
-            navigation.navigate('invoice'); // Navigate to invoice screen
-          },
+          onPress: handleCheckout,
         },
       ]
     );
@@ -129,7 +149,7 @@ return (
     </View>
 
     {/* Checkout Button */}
-    <CustomButton title="BAYAR" onPress={handleCheckout} style={styles.checkoutButton}/>
+    <CustomButton title="BAYAR" onPress={checkoutConfirm} style={styles.checkoutButton}/>
   </ThemedView>
 );
 }
