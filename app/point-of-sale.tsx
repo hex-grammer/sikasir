@@ -154,7 +154,7 @@ export default function PointOfSaleScreen() {
     setSelectedItem(item)
   };
 
-  const handleAddToCart = async (serials: iSerialNumber[]):Promise<Boolean> => {
+  const handleAddToCart = async (serials: iSerialNumber[]): Promise<Boolean> => {
     try {
       if (!selectedCustomer || !posProfileDetail) {
         Alert.alert("Error", selectedCustomer ? "Failed to retrieve POS Profile details." : "Please select a customer first.");
@@ -162,29 +162,26 @@ export default function PointOfSaleScreen() {
       }
   
       const storageInvoice = await AsyncStorage.getItem('posInvoice');
-      let posInvoice = storageInvoice ? await JSON.parse(storageInvoice) : null;
-      const isValidPosInvoice = await validateLink('POS Invoice', posInvoice?.name || '')
-
+      let posInvoice = storageInvoice ? JSON.parse(storageInvoice) : null;
+  
+      const isValidPosInvoice = posInvoice && await validateLink('POS Invoice', posInvoice.name);
       if (!isValidPosInvoice) {
-        // remove AsyncStorage posInvocice
         await AsyncStorage.removeItem('posInvoice');
         posInvoice = null;
       }
   
       let items = posInvoice?.items ? [...posInvoice.items] : [];
-  
-      // log pos invoice
-      // console.log('POS Invoice from point-of-sale:', posInvoice);
       const existingItemIndex = items.findIndex(item => item.item_code === selectedItem.item_code);
-      const serial_and_batch_bundle = await createSNBatch(serials, selectedItem, posInvoice);
-      if (!serial_and_batch_bundle) return false;
+  
+      const serialAndBatchBundle = await createSNBatch(serials, selectedItem, {name:'',items:[{warehouse:posProfileDetail.warehouse,qty:1,item_code:selectedItem.item_code}]});
+      if (!serialAndBatchBundle) return false;
   
       const updatedItem = {
         item_code: selectedItem.item_code,
         item_group: selectedItem.item_group,
         qty: selectedItem.quantity,
         warehouse: posProfileDetail.warehouse,
-        serial_and_batch_bundle,
+        serial_and_batch_bundle: serialAndBatchBundle,
       };
   
       if (existingItemIndex !== -1) {
@@ -193,8 +190,9 @@ export default function PointOfSaleScreen() {
         items.push(updatedItem);
       }
   
-      const payload = {name: posInvoice?.name,items};
-      const updatedInvoice = posInvoice
+      const payload = { name: posInvoice?.name, items };
+  
+      const updatedInvoice = isValidPosInvoice && posInvoice
         ? await updatePOSInvoice(posInvoice.name, payload)
         : await createPOSInvoice({
             taxes_and_charges: "Indonesia Tax - MMPP",
@@ -213,11 +211,12 @@ export default function PointOfSaleScreen() {
       await AsyncStorage.setItem('posInvoice', JSON.stringify(updatedInvoice));
       return true;
     } catch (error) {
-      console.log('Error fetching POS Invoice:', error);
-      Alert.alert("Error", "Failed to create POS Invoice.");
+      console.error('Error processing POS Invoice:', error);
+      Alert.alert("Error", "Failed to process POS Invoice.");
       return false;
     }
   };
+  
 
   const handleCloseModal = () => {
     setModalVisible(false);

@@ -5,7 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import CustomButton from "@/components/CustomButton";
 import { iUserData } from "@/services/user/getUserData";
 import { HomeScreenNavigationProp } from "@/app/_layout";
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { getOpeningEntry } from "@/services/pos/getOpeningEntry";
 import { getPOSProfiles } from "@/services/pos/getPOSProfiles";
 import { getPOSProfileDetails } from "@/services/pos/getPOSProfileDetails";
@@ -80,7 +80,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
       )}
       <ThemedView style={styles.heroButtons}>
         <CustomButton title="Buka POS" onPress={handleOpenPOS} isLoading={loading} />
-        <CustomButton title="Rekap POS" type="outline" onPress={() => {}} />
+        <CustomButton title="Rekap POS" type="outline" onPress={() => router.push('/invoice/ACC-PSINV-2024-00078')} />
       </ThemedView>
     </ThemedView>
   );

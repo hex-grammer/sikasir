@@ -15,7 +15,7 @@ export const validateLink = async (doctype: string, docname: string): Promise<bo
   
       const data = await response.json();
       console.log('Validation response:', data);
-      const isValid = data.message?.name === docname;
+      const isValid = data.message.name && data.message.name === docname;
       return isValid;
     } catch (error) {
       console.error('Error validating link:', error);
