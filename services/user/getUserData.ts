@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 import { getClusterById } from "../cluster/getClusterById";
+import { handleServiceError } from "../errorHandler";
 
 export interface iUserData {
     email: string;
@@ -9,7 +9,7 @@ export interface iUserData {
 };
 
 const getHeaders = (sessionId: string) => ({
-    headers: { Cookie: sessionId },
+    Cookie: sessionId,
 });
 
 export const getUserData = async (): Promise<iUserData> => {
@@ -17,23 +17,29 @@ export const getUserData = async (): Promise<iUserData> => {
         const sessionId = await AsyncStorage.getItem('sid');
         if (!sessionId) throw new Error('No session ID found');
 
-        const { data: loggedUserResponse } = await axios.get(
-            `${process.env.EXPO_PUBLIC_API_URL}/api/method/frappe.auth.get_logged_user`, 
-            getHeaders(sessionId)
+        const loggedUserResponse = await fetch(
+            `${process.env.EXPO_PUBLIC_API_URL}/api/method/frappe.auth.get_logged_user`,
+            { headers: getHeaders(sessionId) }
         );
 
-        // Check for a 403 error in the loggedUserResponse
-        if (loggedUserResponse.code === 403) {
-            throw new Error('Forbidden access');
+        if (!loggedUserResponse.ok) {
+            throw loggedUserResponse;
         }
 
-        const userId = loggedUserResponse.message;
+        const loggedUserData = await loggedUserResponse.json();
+        const userId = loggedUserData.message;
 
-        const fields = ['email','full_name', 'cluster'];
+        const fields = ['email', 'full_name', 'cluster'];
         const filters = [[`name`, `=`, userId]];
         const userUrl = `${process.env.EXPO_PUBLIC_API_URL}/api/resource/User?fields=${JSON.stringify(fields)}&filters=${JSON.stringify(filters)}`;
-        const { data: userResponse } = await axios.get(userUrl, getHeaders(sessionId));
-        const userData = userResponse.data[0];
+        const userResponse = await fetch(userUrl, { headers: getHeaders(sessionId) });
+
+        if (!userResponse.ok) {
+            throw userResponse;
+        }
+
+        const userResponseData = await userResponse.json();
+        const userData = userResponseData.data[0];
 
         const cluster = await getClusterById(userData.cluster);
 
@@ -43,7 +49,10 @@ export const getUserData = async (): Promise<iUserData> => {
             cluster: cluster.nama_cluster,
         };
     } catch (error) {
-        console.error('Failed to get user data:', error);
-        throw error; 
+        handleServiceError(error, {
+            'No session ID found': 'Authentication Error. Please log in again.',
+            'Failed to get user data': 'Unable to retrieve user information. Please try again.',
+        });
+        throw error;
     }
 };

@@ -1,6 +1,6 @@
-import axios from 'axios';
+import { handleServiceError } from './errorHandler';
 
-export const uploadFile = async (fileUri: string) => {
+export const uploadFile = async (fileUri: string): Promise<string> => {
   try {
     const fileName = fileUri.split('/').pop();
 
@@ -13,19 +13,27 @@ export const uploadFile = async (fileUri: string) => {
     formData.append('is_private', '1');
     formData.append('folder', 'Home/Foto KTP Customer');
 
-    const response = await axios.post(
-        `${process.env.EXPO_PUBLIC_API_URL}/api/method/upload_file`,
-      formData,
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/api/method/upload_file`,
       {
+        method: 'POST',
+        body: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       }
     );
 
-    return response.data.message;
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    throw error;
+    if (!response.ok) {
+      throw response;
+    }
+
+    const data = await response.json();
+    return data.message;
+  } catch (error: any) {
+    handleServiceError(error, {
+      'Failed to upload file': 'There was an error uploading the file. Please try again.',
+    });
+    return ''; // Return an empty string in case of error
   }
 };
