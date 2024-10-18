@@ -72,7 +72,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
           <ThemedText type="title">{userData.full_name},</ThemedText>
           <ThemedText type="subtitle">Cluster {userData.cluster}</ThemedText>
           <ThemedText style={styles.heroLargeNumber} type="title">
-            Rp 230.000
+            Rp 0
           </ThemedText>
         </>
       ) : (

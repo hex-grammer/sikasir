@@ -3,15 +3,14 @@ import React, { useCallback, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ScrollView, Image } from 'react-native';
 import CustomButton from '@/components/CustomButton';
 import { HomeScreenNavigationProp } from '../_layout';
-import { getPOSInvoiceDetails } from '@/services/pos/getPOSInvoice';
-import { iPOSInvoice } from '@/interfaces/posInvoice/iPOSInvoice';
+import { getPOSInvoiceDetails, iPOSInvoiceDetails } from '@/services/pos/getPOSInvoice';
 import { iPOSInvoiceItem } from '@/services/pos/createPOSInvoice'; 
 import Separator from '@/components/invoice/Separator';
 
 const InvoiceScreen = () => {
   const { no_invoice } = useLocalSearchParams<{ no_invoice: string }>();
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const [posInvoice, setPosInvoice] = useState<iPOSInvoice|null>(null);
+  const [posInvoice, setPosInvoice] = useState<iPOSInvoiceDetails | null>(null);
 
   const fetchPOSInvoice = useCallback(async () => {
     const res = await getPOSInvoiceDetails(no_invoice);
@@ -23,6 +22,8 @@ const InvoiceScreen = () => {
   }, [fetchPOSInvoice]));
 
   if (!posInvoice) return <View><Text>Loading...</Text></View>;
+
+  const { customer_details, owner_details, cluster_details } = posInvoice;
 
   const renderInfoRow = (label: string, value: string) => (
     <View style={styles.infoRow}>
@@ -55,27 +56,35 @@ const InvoiceScreen = () => {
         </View>
 
         <Text style={styles.companyInfo}>
-          PT. MAKASSAR MEGA PUTRA PRIMA {'\n'} JL. AP PETTARANI NO. 18 BLOK A10, KEL. TAMAMAUNG, KEC. PANAKKUKANG, MAKASSAR 90231 NPWP: 002.217.307.4.812.000 {'\n'} TLP: 0411-427116
+          PT. MAKASSAR MEGA PUTRA PRIMA {'\n'} JL. AP PETTARANI NO. 18 BLOK A10, KEL. TAMAMAUNG, KEC. PANAKKUKKANG, MAKASSAR 90231 NPWP: 002.217.307.4.812.000 {'\n'} TLP: 0411-427116
         </Text>
 
         <Separator />
 
         <Text style={styles.companyInfo}>
-          CLUSTER 411311 - PALANGKARAYA {'\n'} JL. RTA MILONO KM. 1 NO 11 KEL. LANGKAI KEC. PAHANDUT KOTA PALANGKA RAYA KALIMANTAN TENGAH 73111 {'\n'} TLP: 0811-5534-666
+          {cluster_details ? (
+            <>
+              CLUSTER {cluster_details.nomor_cluster} - {cluster_details.nama_cluster} {'\n'} 
+              {cluster_details.alamat_cluster} {'\n'} 
+              {cluster_details.telpon ? `TLP: ${cluster_details.telpon}` : ''}
+            </>
+          ) : (
+            "Cluster details not available"
+          )}
         </Text>
 
         <Separator />
 
         <View style={styles.infoSection}>
-          {renderInfoRow("ID DIGISPOS", "4100011643")}
-          {renderInfoRow("CUSTOMER", posInvoice.customer || "Maskiah")}
-          {renderInfoRow("NPWP", "63040445117600004")}
-          {renderInfoRow("KTP", "Jl teratai no 023")}
-          {renderInfoRow("ALAMAT", "Jl teratai no 023")}
+          {renderInfoRow("ID DIGISPOS", customer_details.custom_id_outlet || "-")}
+          {renderInfoRow("CUSTOMER", posInvoice.customer_name || "-")}
+          {renderInfoRow("NPWP", customer_details.custom_npwp || "-")}
+          {renderInfoRow("KTP", customer_details.custom_ktp || "-")}
+          {renderInfoRow("ALAMAT", customer_details.custom_alamat || "-")}
           <Separator />
-          {renderInfoRow("NO INVOICE", posInvoice.custom_pos_invoice_number || "411311-2024-10-17-002")}
-          {renderInfoRow("TGL INVOICE", posInvoice.posting_date || "17-10-2024 10:07:11")}
-          {renderInfoRow("SALES", "PKY - DEWI SINTA")}
+          {renderInfoRow("NO INVOICE", posInvoice.custom_pos_invoice_number || "-")}
+          {renderInfoRow("TGL INVOICE", `${posInvoice.posting_date} ${posInvoice.posting_time}` || "-")}
+          {renderInfoRow("SALES", owner_details.full_name || "-")}
         </View>
 
         <Separator />
@@ -99,10 +108,10 @@ const InvoiceScreen = () => {
         <View>
           {[
             { label: "TOTAL BEFORE TAX", value: posInvoice.net_total || 0 },
-            { label: "DISCOUNT", value: posInvoice.discount_amount },
+            { label: "DISCOUNT", value: posInvoice.discount_amount || 0 },
             { label: "TAX", value: posInvoice.total_taxes_and_charges || 0 },
             { label: "TOTAL AFTER TAX", value: posInvoice.grand_total || 0 },
-            { label: "PAID AMOUNT", value: posInvoice.grand_total || 0 },
+            { label: "PAID AMOUNT", value: posInvoice.paid_amount || 0 },
           ].map(({ label, value }) => (
             <View key={label} style={styles.totalRow}>
               <Text style={styles.totalLabel}>{label}</Text>
@@ -113,8 +122,7 @@ const InvoiceScreen = () => {
 
         <Separator />
         <Text style={styles.taxNote}>
-          "Invoice yang dipersamakan dengan Faktur Pajak
-          berdasarkan PMK Nomor 58/PMK.03/2021"
+          "Invoice yang dipersamakan dengan Faktur Pajak berdasarkan PMK Nomor 6/PMK.03/2021"
         </Text>
         <Separator />
 
@@ -148,24 +156,24 @@ const styles = StyleSheet.create({
   },
   logoSection: { alignItems: 'center', justifyContent: 'center' },
   logo: { width: 100, height: 78.5 },
-  companyInfo: { textAlign: 'center', fontSize: 12 },
+  companyInfo: { textAlign: 'center', fontSize: 12, textTransform: 'uppercase' },
   infoSection: { paddingVertical: 4 },
   infoRow: { flexDirection: 'row', alignItems: 'flex-start' },
   label: { fontWeight: 'bold', flex: 1, textAlign: 'left' },
   colon: { marginHorizontal: 4, textAlign: 'center', width: 10 },
   value: { flex: 2, textAlign: 'left' },
   itemRow: { flexDirection: 'row', marginBottom: 4 },
-  headerText: { fontWeight: 'bold', },
+  headerText: { fontWeight: 'bold' },
   itemCodeColumn: { flex: 1 },
   descriptionColumn: { flex: 3 },
   qtyColumn: { flex: 1, textAlign: 'center' },
   totalColumn: { flex: 2, textAlign: 'right' },
-  itemText: { },
+  itemText: {},
   totalRow: { flexDirection: 'row', justifyContent: 'space-between' },
   totalLabel: { fontWeight: 'bold' },
   totalValue: { textAlign: 'right' },
-  taxNote: {  textAlign: 'center', fontWeight: 'bold' },
-  footerNote: {  textAlign: 'justify' },
+  taxNote: { textAlign: 'center', fontWeight: 'bold' },
+  footerNote: { textAlign: 'justify' },
   buttonsSection: { display: 'flex', gap: 8, padding: 20, marginBottom: 80 },
 });
 
