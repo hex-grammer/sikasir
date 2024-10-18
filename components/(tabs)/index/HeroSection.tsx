@@ -80,7 +80,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
       )}
       <ThemedView style={styles.heroButtons}>
         <CustomButton title="Buka POS" onPress={handleOpenPOS} isLoading={loading} />
-        <CustomButton title="Rekap POS" type="outline" onPress={() => router.push('/invoice/ACC-PSINV-2024-00078')} />
+        {/* <CustomButton title="Rekap POS" type="outline" onPress={() => router.push('/invoice/ACC-PSINV-2024-00026')} /> */}
+        <CustomButton title="Rekap POS" type="outline" onPress={() => {}} />
       </ThemedView>
     </ThemedView>
   );
