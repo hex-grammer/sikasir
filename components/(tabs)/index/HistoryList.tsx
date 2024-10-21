@@ -26,9 +26,9 @@ const HistoryList: React.FC<HistoryListProps> = ({ historyItems }) => {
     <ThemedView style={styles.historyContainer}>
       <ThemedView style={styles.historyHeader}>
         <ThemedText style={styles.historyText}>History</ThemedText>
-        <Pressable onPress={() => {}}>
+        {/* <Pressable onPress={() => {}}>
           <ThemedText style={{ color: "gray" }}>Lihat selengkapnya</ThemedText>
-        </Pressable>
+        </Pressable> */}
       </ThemedView>
       {historyItems && historyItems.length > 0 ? (
         <ThemedView style={styles.scrollableContainer}>

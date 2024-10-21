@@ -21,7 +21,6 @@ export default function Settings() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Settings</ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
       <CustomButton title="Logout" onPress={handleLogout} />
     </ParallaxScrollView>
   );

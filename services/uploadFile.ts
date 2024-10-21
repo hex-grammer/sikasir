@@ -1,6 +1,6 @@
 import { handleServiceError } from './errorHandler';
 
-export const uploadFile = async (fileUri: string): Promise<string> => {
+export const uploadFile = async (fileUri: string) => {
   try {
     const fileName = fileUri.split('/').pop();
 
@@ -34,6 +34,5 @@ export const uploadFile = async (fileUri: string): Promise<string> => {
     handleServiceError(error, {
       'Failed to upload file': 'There was an error uploading the file. Please try again.',
     });
-    return ''; // Return an empty string in case of error
   }
 };
