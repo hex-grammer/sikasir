@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { getUserData, iUserData } from "@/services/user/getUserData";
 import { getPOSInvoiceList, iPOSInvoice } from "@/services/pos/getPOSInvoiceList";
 import { getPOSProfiles } from "@/services/pos/getPOSProfiles";
+import { useFocusEffect } from "expo-router";
 
 const useHomeData = () => {
   const [userData, setUserData] = useState<iUserData | null>(null);
@@ -31,10 +32,12 @@ const useHomeData = () => {
     }
   };
 
-  useEffect(() => {
-    fetchUserData();
-    fetchHistoryItems();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchUserData();
+      fetchHistoryItems();
+    }, [])
+  );
 
   return { userData, historyItems, totalAmount };
 };
