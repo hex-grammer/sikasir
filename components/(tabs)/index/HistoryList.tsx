@@ -2,55 +2,24 @@ import { FlatList, Pressable, StyleSheet } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import React from "react";
+import { iPOSInvoice } from "@/services/pos/getPOSInvoiceList";
+import { router } from "expo-router";
 
-interface HistoryItem {
-  nomor_invoice: string;
-  nama_customer: string;
-  amount: string;
+interface HistoryListProps {
+  historyItems: iPOSInvoice[];
 }
 
-const HISTORY_ITEMS: HistoryItem[] | null = [
-  {
-    nomor_invoice: "411007-2024-09-25-007",
-    nama_customer: "Rizal Iswandy",
-    amount: "Rp 130.000",
-  },
-  {
-    nomor_invoice: "411007-2024-09-25-006",
-    nama_customer: "Rudy",
-    amount: "Rp 56.000",
-  },
-  {
-    nomor_invoice: "411007-2024-09-25-005",
-    nama_customer: "Samson",
-    amount: "Rp 23.000",
-  },
-  {
-    nomor_invoice: "411007-2024-09-25-004",
-    nama_customer: "Rizal Iswandy",
-    amount: "Rp 130.000",
-  },
-  {
-    nomor_invoice: "411007-2024-09-25-003",
-    nama_customer: "Rudy",
-    amount: "Rp 56.000",
-  },
-  {
-    nomor_invoice: "411007-2024-09-25-002",
-    nama_customer: "Samson",
-    amount: "Rp 23.000",
-  },
-];
-
-const HistoryList: React.FC = () => {
-  const renderHistoryItem = ({ item }: { item: HistoryItem }) => (
-    <ThemedView style={styles.historyItem}>
-      <ThemedView style={styles.historyItemLeft}>
-        <ThemedText>{item.nama_customer}</ThemedText>
-        <ThemedText>{item.nomor_invoice}</ThemedText>
+const HistoryList: React.FC<HistoryListProps> = ({ historyItems }) => {
+  const renderHistoryItem = ({ item }: { item: iPOSInvoice }) => (
+    <Pressable onPress={() => router.push(`/invoice/${item.name}`)}>
+      <ThemedView style={styles.historyItem}>
+        <ThemedView style={styles.historyItemLeft}>
+          <ThemedText style={styles.invoiceNumber}>{item.customer_name}</ThemedText>
+          <ThemedText>{item.custom_pos_invoice_number}</ThemedText>
+        </ThemedView>
+        <ThemedText style={styles.historyItemRight}>Rp {item.grand_total.toLocaleString()}</ThemedText>
       </ThemedView>
-      <ThemedText style={styles.historyItemRight}>{item.amount}</ThemedText>
-    </ThemedView>
+    </Pressable>
   );
 
   return (
@@ -61,12 +30,14 @@ const HistoryList: React.FC = () => {
           <ThemedText style={{ color: "gray" }}>Lihat selengkapnya</ThemedText>
         </Pressable>
       </ThemedView>
-      {HISTORY_ITEMS && HISTORY_ITEMS.length > 0 ? (
-        <FlatList
-          data={HISTORY_ITEMS}
-          keyExtractor={(item) => item.nomor_invoice}
-          renderItem={renderHistoryItem}
-        />
+      {historyItems && historyItems.length > 0 ? (
+        <ThemedView style={styles.scrollableContainer}>
+          <FlatList
+            data={historyItems}
+            keyExtractor={(item) => item.name}
+            renderItem={renderHistoryItem}
+          />
+        </ThemedView>
       ) : (
         <ThemedText style={{ color: "gray", textAlign: "center", marginTop: 12 }}>
           History tidak tersedia
@@ -79,7 +50,9 @@ const HistoryList: React.FC = () => {
 export default HistoryList;
 
 const styles = StyleSheet.create({
-  historyContainer: {},
+  historyContainer: {
+    flex:1,
+  },
   historyHeader: {
     display: "flex",
     flexDirection: "row",
@@ -97,7 +70,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-end",
     marginBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
@@ -107,8 +80,13 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
   },
-  historyItemRight: {
+  invoiceNumber:{
     fontWeight: "bold",
+  },
+  historyItemRight: {
     textAlign: "right",
+  },
+  scrollableContainer: {
+    flex: 1,
   },
 });

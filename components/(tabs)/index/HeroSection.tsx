@@ -13,9 +13,10 @@ import { createOpeningVoucher } from "@/services/pos/createOpeningVoucher";
 
 interface HeroSectionProps {
   userData: iUserData | null;
+  totalAmount: number;
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
+const HeroSection: React.FC<HeroSectionProps> = ({ userData, totalAmount }) => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [loading, setLoading] = useState(false);
 
@@ -23,43 +24,36 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
     setLoading(true);
 
     try {
-      // await openPOS(userData, navigation);
       if (!userData?.email) {
         throw new Error("User data not available");
       }
-  
-      // Step 1: Check if there's an opening entry
+
       const openingEntry = await getOpeningEntry(userData.email);
-      if (!openingEntry.message || openingEntry.message.length !== 0) {
+      if (openingEntry.message && openingEntry.message.length === 0) {
+        const profileResult = await getPOSProfiles("Makassar Mega Putra Prima");
+        if (!profileResult.message?.length) {
+          throw new Error("No POS Profiles found for the company.");
+        }
+
+        const posProfileName = profileResult.message[0].value;
+        const profileDetail = await getPOSProfileDetails(posProfileName);
+        if (!profileDetail) {
+          throw new Error("Failed to retrieve POS Profile details.");
+        }
+
+        const voucherResult = await createOpeningVoucher(profileDetail);
+        if (!voucherResult?.message) {
+          throw new Error("Failed to create opening voucher.");
+        }
+
+        Alert.alert("Success", "Opening voucher created successfully!");
+        console.log("Opening voucher created successfully!");
+      } else {
         navigation.navigate("point-of-sale");
-        return;
       }
-  
-      // Step 2: Fetch POS profiles for the company
-      const profileResult = await getPOSProfiles("Makassar Mega Putra Prima");
-      if (!profileResult.message?.length) {
-        throw new Error("No POS Profiles found for the company.");
-      }
-  
-      // Step 3: Fetch POS profile details
-      const posProfileName = profileResult.message[0].value;
-      const profileDetail = await getPOSProfileDetails(posProfileName);
-      if (!profileDetail) {
-        throw new Error("Failed to retrieve POS Profile details.");
-      }
-  
-      // Step 4: Create the opening voucher
-      const voucherResult = await createOpeningVoucher(profileDetail);
-      if (!voucherResult?.message) {
-        throw new Error("Failed to create opening voucher.");
-      }
-  
-      // Step 5: If everything succeeds
-      Alert.alert("Success", "Opening voucher created successfully!");
-      // navigation.navigate("point-of-sale");
-      console.log("Opening voucher created successfully!");
-    } catch (error) {
-      Alert.alert("Error", "Failed to process the request.");
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to process the request.";
+      Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -72,7 +66,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
           <ThemedText type="title">{userData.full_name},</ThemedText>
           <ThemedText type="subtitle">Cluster {userData.cluster}</ThemedText>
           <ThemedText style={styles.heroLargeNumber} type="title">
-            Rp 0
+            Rp {totalAmount.toLocaleString()}
           </ThemedText>
         </>
       ) : (
@@ -80,7 +74,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ userData }) => {
       )}
       <ThemedView style={styles.heroButtons}>
         <CustomButton title="Buka POS" onPress={handleOpenPOS} isLoading={loading} />
-        {/* <CustomButton title="Rekap POS" type="outline" onPress={() => router.push('/invoice/ACC-PSINV-2024-00026')} /> */}
         <CustomButton title="Rekap POS" type="outline" onPress={() => {}} />
       </ThemedView>
     </ThemedView>
@@ -93,7 +86,7 @@ const styles = StyleSheet.create({
   heroContainer: {
     display: "flex",
     justifyContent: "flex-end",
-    height: "45%",
+    height: "35%",
     width: "100%",
     marginBottom: 12,
   },
