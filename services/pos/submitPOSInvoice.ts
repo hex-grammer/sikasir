@@ -1,13 +1,26 @@
+import { iPOSInvoice } from "@/interfaces/posInvoice/iPOSInvoice";
+
 const API_URL = `${process.env.EXPO_PUBLIC_API_URL}/api/resource/POS%20Invoice`;
 
-const submitPOSInvoice = async (invoiceName: string) => {
+const submitPOSInvoice = async (posInvoice: iPOSInvoice) => {
   try {
-    const response = await fetch(`${API_URL}/${invoiceName}`, {
+    
+    const response = await fetch(`${API_URL}/${posInvoice.name}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({docstatus:1}),
+      body: JSON.stringify({
+        docstatus:1,
+        update_stock:1,
+        paid_amount: posInvoice.grand_total,
+        amount_eligible_for_commission: posInvoice.net_total,
+        payments: [{
+          amount:posInvoice.grand_total,
+          mode_of_payment:posInvoice.payments[0].mode_of_payment,
+          base_amount: posInvoice.grand_total,
+        }]
+      }),
     });
 
     const res = await response.json();

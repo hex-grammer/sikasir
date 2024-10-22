@@ -63,7 +63,12 @@ export default function CartScreen() {
   };
 
   const handleCheckout = async () => {
-    const isValidPosInvoice = await validateLink('POS Invoice', posInvoice?.name || '')
+    if (!posInvoice) {
+      Alert.alert('Oops!', 'Keranjang masih kosong. Silakan tambahkan item sebelum checkout.');
+      return;
+    }
+    
+    const isValidPosInvoice = await validateLink('POS Invoice', posInvoice.name)
 
     if (!isValidPosInvoice) {
       Alert.alert('Gagal', 'Data tidak valid.');
@@ -71,7 +76,7 @@ export default function CartScreen() {
       return;
     }
 
-    const isSaved =  await submitPOSInvoice(posInvoice?.name || '');
+    const isSaved =  await submitPOSInvoice(posInvoice);
 
     if (!isSaved) return Alert.alert('Gagal', 'Data gagal disimpan.');
 
@@ -80,11 +85,14 @@ export default function CartScreen() {
     await AsyncStorage.removeItem('posInvoice');
     setPosInvoice(null);
     setCartItems([]);
-    router.push(`/invoice/${posInvoice?.name}`);
+    router.push(`/invoice/${posInvoice.name}`);
   }
 
   const checkoutConfirm = () => {
-    if(!posInvoice) return Alert.alert('Oops!','Keranjang masih kosong');
+    if (!posInvoice) {
+      Alert.alert('Oops!', 'Keranjang masih kosong. Silakan tambahkan item sebelum checkout.');
+      return;
+    }
 
     Alert.alert(
       'Pembayaran',
