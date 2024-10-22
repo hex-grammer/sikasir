@@ -132,7 +132,8 @@ const InvoiceScreen = () => {
       </View>
 
       <View style={styles.buttonsSection}>
-        <CustomButton title="Transaksi Baru" onPress={() => navigation.navigate('point-of-sale')}/>
+        <CustomButton title="Selesai" onPress={() => navigation.navigate('(tabs)')}/>
+        <CustomButton title="Transaksi Baru" type="outline" onPress={() => navigation.navigate('point-of-sale')}/>
         <CustomButton title="Print Invoice" type="outline" onPress={() => alert("Print Invoice")}/>
         <CustomButton title="Download Invoice" type="outline" onPress={() => alert("Download Invoice")}/>
         <CustomButton title="Kirim Email" type="outline" onPress={() => alert("Send Email")}/>
