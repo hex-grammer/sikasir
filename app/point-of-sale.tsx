@@ -66,11 +66,11 @@ export default function PointOfSaleScreen() {
       const result = await getUserData();
       setUserData(result);
 
-      const { message } = await getOpeningEntry(result.email);
-      const data =  await getPOSProfileDetails(message[0].pos_profile);
+      const res = await getOpeningEntry(result.email);
+      const data =  await getPOSProfileDetails(res[0].pos_profile);
 
       setPosProfileDetail(data);
-      setPosProfile(message[0].pos_profile);
+      setPosProfile(res[0].pos_profile);
     } catch (error: any) {
       console.log(error);
       switch (error.message) {

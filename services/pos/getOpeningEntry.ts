@@ -11,7 +11,8 @@ export const getOpeningEntry = async (email?: string) => {
     if (!response.ok) {
       throw new Error("Failed to check opening entry.");
     }
-    return response.json();
+    const data = await response.json();
+    return data.message
   } catch (error) {
     throw new Error("Error checking opening entry");
   }

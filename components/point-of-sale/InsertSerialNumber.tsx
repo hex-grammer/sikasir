@@ -143,6 +143,7 @@ const InsertSerialNumber: React.FC<InsertSerialNumberProps> = ({selectedItem,set
                   value={item.value}
                   onChangeText={(value) => handleSerialChange(index, value)}
                   placeholder={`Serial ${index + 1}`}
+                  keyboardType='numeric'
                 />
                 <Pressable onPress={() => handleRemoveSerial(index)} style={styles.removeButton}>
                   <Text style={styles.removeButtonText}>✕</Text>

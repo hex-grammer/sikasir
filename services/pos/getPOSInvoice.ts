@@ -27,7 +27,7 @@ export interface iPOSInvoiceDetails extends iPOSInvoice {
   cluster_details?: iCluster;
 }
 
-export const getPOSInvoiceDetails = async (noInvoice: string): Promise<iPOSInvoiceDetails | null> => {
+export const getPOSInvoiceDetails = async (noInvoice: string, keys: string[] = []): Promise<iPOSInvoiceDetails | null> => {
   try {
     const sessionId = await AsyncStorage.getItem('sid');
     if (!sessionId) throw new Error('No session ID found. Please log in again.');
@@ -48,16 +48,25 @@ export const getPOSInvoiceDetails = async (noInvoice: string): Promise<iPOSInvoi
 
     const { data } = await response.json();
 
-    const customerDetails = await getCustomerDetails(data.customer);
-    const ownerDetails = await getUserDetails(data.owner);
+    const filteredData = keys.length > 0 
+      ? Object.fromEntries(Object.entries(data).filter(([key]) => keys.includes(key))) 
+      : data;
 
+    let customerDetails: iCustomer | undefined;
+    let ownerDetails: iUser | undefined;
     let clusterDetails: iCluster | undefined;
-    if (ownerDetails.cluster) {
-      clusterDetails = await getClusterDetails(ownerDetails.cluster);
+
+    if (keys.length === 0) {
+      customerDetails = await getCustomerDetails(data.customer);
+      ownerDetails = await getUserDetails(data.owner);
+
+      if (ownerDetails.cluster) {
+        clusterDetails = await getClusterDetails(ownerDetails.cluster);
+      }
     }
 
     return {
-      ...data,
+      ...filteredData,
       customer_details: customerDetails,
       owner_details: ownerDetails,
       cluster_details: clusterDetails,

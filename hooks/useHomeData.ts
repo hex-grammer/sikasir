@@ -22,7 +22,8 @@ const useHomeData = () => {
     try {
       const profileResult = await getPOSProfiles("Makassar Mega Putra Prima");
       if (profileResult) {
-        const invoices = await getPOSInvoiceList(profileResult.message[0].value, 'Paid');
+        const invoices = await getPOSInvoiceList(profileResult.message[0].value, 'Paid',['net_total','total_qty','customer']);
+        // const invoices = await getPOSInvoiceList(profileResult.message[0].value, 'Paid');
         setHistoryItems(invoices);
         const total = invoices.reduce((sum, item) => sum + Number(item.grand_total), 0);
         setTotalAmount(total);
@@ -32,6 +33,11 @@ const useHomeData = () => {
     }
   };
 
+  // Expose the fetchHistoryItems function
+  const refreshHistoryData = async () => {
+    await fetchHistoryItems();
+  };
+
   useFocusEffect(
     useCallback(() => {
       fetchUserData();
@@ -39,7 +45,7 @@ const useHomeData = () => {
     }, [])
   );
 
-  return { userData, historyItems, totalAmount };
+  return { userData, historyItems, totalAmount, refreshHistoryData };
 };
 
 export default useHomeData;

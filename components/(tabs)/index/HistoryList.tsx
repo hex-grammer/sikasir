@@ -17,7 +17,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ historyItems }) => {
           <ThemedText style={styles.invoiceNumber}>{item.customer_name}</ThemedText>
           <ThemedText>{item.custom_pos_invoice_number}</ThemedText>
         </ThemedView>
-        <ThemedText style={styles.historyItemRight}>Rp {item.grand_total.toLocaleString()}</ThemedText>
+        <ThemedText style={styles.historyItemRight}>Rp {item.grand_total?.toLocaleString() || 0}</ThemedText>
       </ThemedView>
     </Pressable>
   );
