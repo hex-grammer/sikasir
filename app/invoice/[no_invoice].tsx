@@ -1,17 +1,37 @@
 import { useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ScrollView, Image } from 'react-native';
 import CustomButton from '@/components/CustomButton';
 import { HomeScreenNavigationProp } from '../_layout';
 import { getPOSInvoiceDetails, iPOSInvoiceDetails } from '@/services/pos/getPOSInvoice';
 import { iPOSInvoiceItem } from '@/services/pos/createPOSInvoice'; 
 import Separator from '@/components/invoice/Separator';
+import * as FileSystem from 'expo-file-system';
+import * as Notifications from 'expo-notifications';
+import * as MediaLibrary from 'expo-media-library';
+import * as Sharing from 'expo-sharing';
+import { Platform, Alert } from 'react-native';
+import { arrayBufferToBase64 } from '@/hooks/arrayBufferToBase64';
 
 const InvoiceScreen = () => {
   const { no_invoice } = useLocalSearchParams<{ no_invoice: string }>();
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [posInvoice, setPosInvoice] = useState<iPOSInvoiceDetails | null>(null);
+  const [invoiceUri, setInvoiceUri] = useState<string|null>(null)
 
+  const requestNotificationPermission = async () => {
+    const { status } = await Notifications.requestPermissionsAsync();
+    if (status !== 'granted') {
+        Alert.alert('Permission denied', 'Cannot send notifications without permission.');
+        return false;
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+  
   const fetchPOSInvoice = useCallback(async () => {
     const res = await getPOSInvoiceDetails(no_invoice);
     setPosInvoice(res);
@@ -43,6 +63,74 @@ const InvoiceScreen = () => {
       </Text>
     </View>
   );
+
+  const downloadInvoice = async () => {
+    try {
+        const fileURL = `${process.env.EXPO_PUBLIC_API_URL}/api/method/frappe.utils.print_format.download_pdf?doctype=POS%20Invoice&name=${posInvoice.name}&key=None`;
+        const fileName = `${posInvoice.custom_pos_invoice_number}.pdf`;
+        const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+
+        const response = await fetch(fileURL);
+        if (!response.ok) {
+            throw new Error('Failed to download invoice');
+        }
+        
+        const fileData = await response.arrayBuffer();
+        const base64Data = arrayBufferToBase64(fileData);
+        await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+            encoding: FileSystem.EncodingType.Base64,
+        });
+
+        setInvoiceUri(fileUri)
+
+        await handleFileStorage(fileUri);
+    } catch (error) {
+        console.error('Error downloading invoice:', error);
+        Alert.alert('Error', 'An error occurred while downloading the invoice.');
+    }
+  };
+
+  const handleFileStorage = async (uri:string) => {
+    try {
+        const { granted } = await MediaLibrary.requestPermissionsAsync();
+        if (!granted) throw new Error('Storage permission denied.');
+
+        await MediaLibrary.createAssetAsync(uri);
+
+        Alert.alert('Success', 'Invoice downloaded and saved successfully!');
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: 'Download Complete',
+                body: `Invoice ${posInvoice.custom_pos_invoice_number} saved successfully!`,
+                data: { uri },
+            },
+            trigger: { seconds: 1 },
+        });
+
+        if (Platform.OS !== 'web') await Sharing.shareAsync(uri);
+    } catch (error) {
+        console.error('Error saving to media library:', error);
+        throw new Error('Failed to save invoice to media library.');
+    }
+  };
+
+  const handleShareFile = async () => {
+    let uri = invoiceUri
+    if(!uri){ 
+      const fileName = `${posInvoice.custom_pos_invoice_number}.pdf`;
+      const fileUri = `${FileSystem.documentDirectory}${fileName}`;
+      const fileExists = await FileSystem.getInfoAsync(fileUri);
+      if (!fileExists.exists) {
+          alert('Silakan download invoice terlebih dahulu.');
+          return;
+      }
+
+      uri = fileUri;
+      setInvoiceUri(fileUri)
+    }
+    
+    if (Platform.OS !== 'web') await Sharing.shareAsync(uri);
+  }
 
   return (
     <ScrollView style={styles.scrollView}>
@@ -135,8 +223,8 @@ const InvoiceScreen = () => {
         <CustomButton title="Selesai" onPress={() => navigation.navigate('(tabs)')}/>
         <CustomButton title="Transaksi Baru" type="outline" onPress={() => navigation.navigate('point-of-sale')}/>
         <CustomButton title="Print Invoice" type="outline" onPress={() => alert("Print Invoice")}/>
-        <CustomButton title="Download Invoice" type="outline" onPress={() => alert("Download Invoice")}/>
-        <CustomButton title="Kirim Email" type="outline" onPress={() => alert("Send Email")}/>
+        <CustomButton title="Download Invoice" type="outline" onPress={downloadInvoice}/>
+        <CustomButton title="Bagikan" type="outline" onPress={handleShareFile}/>
       </View>
     </ScrollView>
   );
