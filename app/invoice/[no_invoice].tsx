@@ -33,7 +33,7 @@ const InvoiceScreen = () => {
   }, []);
   
   const fetchPOSInvoice = useCallback(async () => {
-    const res = await getPOSInvoiceDetails(no_invoice);
+    const res = await getPOSInvoiceDetails(no_invoice || '');
     setPosInvoice(res);
   }, [no_invoice]);
 

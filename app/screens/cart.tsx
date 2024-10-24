@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { HomeScreenNavigationProp } from './_layout';
+import { HomeScreenNavigationProp } from '../_layout';
 import { ThemedView } from '@/components/ThemedView';
 import CartItem, { iCartItem } from '@/components/cart/CartItem';
 import CustomButton from '@/components/CustomButton';

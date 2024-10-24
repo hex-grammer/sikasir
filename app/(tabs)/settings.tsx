@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Alert } from 'react-native';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -10,8 +10,20 @@ import { logout } from '@/services/authService';
 
 export default function Settings() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const handleLogout = async() => {
+
+  const handleLogout = async () => {
     await logout().then(() => navigation.navigate('login'));
+  };
+
+  const connectAndPrint = async () => {
+    try {
+      // connect to bluetooth printer
+
+      Alert.alert('Success', 'Printed successfully!');
+    } catch (error: any) {
+      console.error('Error printing:', error);
+      Alert.alert('Print Error', error.message);
+    }
   };
 
   return (
@@ -21,6 +33,7 @@ export default function Settings() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Settings</ThemedText>
       </ThemedView>
+      <CustomButton title="Connect and Print" onPress={connectAndPrint} />
       <CustomButton title="Logout" onPress={handleLogout} />
     </ParallaxScrollView>
   );

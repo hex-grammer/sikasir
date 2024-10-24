@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
-import { login } from '../services/authService';
+import { View, Text, TextInput, Alert, StyleSheet } from 'react-native';
+import { login } from '../../services/authService';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from './_layout'; 
+import { RootStackParamList } from '../_layout'; 
 import CustomButton from '@/components/CustomButton';
 
 type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'login'>;
