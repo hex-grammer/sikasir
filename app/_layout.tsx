@@ -11,6 +11,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 export type RootStackParamList = {
   login: undefined;
   'point-of-sale': undefined;
+  'setup-printer': undefined;
   cart: undefined;
   invoice: undefined;
   '(tabs)': undefined;
@@ -50,12 +51,12 @@ export default function RootLayout() {
   return (
     <PaperProvider theme={theme}>
       <Stack>
-        <Stack.Screen name="screens/login" options={{ headerShown: false }} />
-        <Stack.Screen name="screens/point-of-sale" options={{title: "Point of Sale", animation: 'slide_from_right'}} />
-        <Stack.Screen name="screens/cart" options={{title: "Keranjang", animation: 'slide_from_right'}} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="point-of-sale" options={{title: "Point of Sale", animation: 'slide_from_right'}} />
+        <Stack.Screen name="cart" options={{title: "Keranjang", animation: 'slide_from_right'}} />
+        <Stack.Screen name="setup-printer" options={{title: "Setup Printer", animation: 'slide_from_right'}} />
         <Stack.Screen name="invoice/[no_invoice]" options={{title: "Invoice", animation: 'slide_from_bottom',headerBackVisible: false,}} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="screens/setup-printer" options={{title: "Setup Printer", animation: 'slide_from_right'}} />
       </Stack>
     </PaperProvider>
   );

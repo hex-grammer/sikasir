@@ -16,15 +16,10 @@ export default function Settings() {
   };
 
   const connectAndPrint = async () => {
-    try {
-      // connect to bluetooth printer
-
-      Alert.alert('Success', 'Printed successfully!');
-    } catch (error: any) {
-      console.error('Error printing:', error);
-      Alert.alert('Print Error', error.message);
-    }
+    //
   };
+
+  const testPrinting = () =>{}
 
   return (
     <ParallaxScrollView
@@ -33,7 +28,8 @@ export default function Settings() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Settings</ThemedText>
       </ThemedView>
-      <CustomButton title="Connect and Print" onPress={connectAndPrint} />
+      <CustomButton title="Setup Printer" onPress={() => navigation.navigate('setup-printer')} />
+      <CustomButton title="Connect and Print" onPress={connectAndPrint} /> 
       <CustomButton title="Logout" onPress={handleLogout} />
     </ParallaxScrollView>
   );

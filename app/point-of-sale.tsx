@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {StyleSheet,FlatList,TextInput,KeyboardAvoidingView,Platform,Alert,} from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { HomeScreenNavigationProp } from "../_layout";
+import { HomeScreenNavigationProp } from "./_layout";
 import ItemCard, { iItemCart } from "@/components/point-of-sale/ItemCard";
 import { SelectCustomer, iSelectCustomer } from "@/components/point-of-sale/SelectCustomer";
 import { ThemedView } from "@/components/ThemedView";
